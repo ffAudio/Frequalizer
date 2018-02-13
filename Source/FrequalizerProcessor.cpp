@@ -15,8 +15,6 @@ std::vector<Colour> FrequalizerAudioProcessor::bandColours = {Colour (0xff0000ff
 
 std::vector<String> FrequalizerAudioProcessor::bandNames   = {"Lowest", "Low", "Low mids", "High mids", "High", "Highest"};
 
-std::vector<String> FrequalizerAudioProcessor::filterTypeNames = {"No Filter", "High Pass", "1st High Pass", "Low Shelf", "Band Pass", "All Pass", "1st All Pass", "Notch", "Peak", "High Shelf", "1st Low Pass", "Low Pass"};
-
 //==============================================================================
 FrequalizerAudioProcessor::FrequalizerAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -41,12 +39,14 @@ state (*this, &undo)
     std::vector<FilterType> filterDefaults = {HighPass, LowShelf, BandPass, BandPass, HighShelf, LowPass};
     for (int i = 0; i < numBands; ++i) {
         state.createAndAddParameter (getTypeParamName (i), bandNames [i] + " Type", TRANS ("Filter Type"),
-                                     NormalisableRange<float> (0, filterTypeNames.size(), 1),
+                                     NormalisableRange<float> (0, LastFilterID, 1),
                                      filterDefaults [i],
-                                     [](float value) { return (isPositiveAndBelow (value, filterTypeNames.size())) ?
-                                         filterTypeNames [value] : TRANS ("undefined"); },
-                                     [](String text) { auto it = std::find (filterTypeNames.cbegin(), filterTypeNames.cend(), text);
-                                         return std::distance (filterTypeNames.cbegin(), it); },
+                                     [](float value) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(value)); },
+                                     [](String text) {
+                                         for (int i=0; i < LastFilterID; ++i)
+                                             if (text == FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(i)))
+                                                 return static_cast<FilterType>(i);
+                                         return NoFilter; },
                                      false, true, true);
 
         state.createAndAddParameter (getFrequencyParamName (i), bandNames [i] + " freq", "Frequency",
@@ -256,6 +256,25 @@ FrequalizerAudioProcessor::FilterType FrequalizerAudioProcessor::getFilterType (
         return bands [index].type;
     }
     return AllPass;
+}
+
+String FrequalizerAudioProcessor::getFilterTypeName (const FilterType type)
+{
+    switch (type) {
+        case NoFilter:      return TRANS ("No Filter");
+        case HighPass:      return TRANS ("High Pass");
+        case HighPass1st:   return TRANS ("1st High Pass");
+        case LowShelf:      return TRANS ("Low Shelf");
+        case BandPass:      return TRANS ("Band Pass");
+        case AllPass:       return TRANS ("All Pass");
+        case AllPass1st:    return TRANS ("1st All Pass");
+        case Notch:         return TRANS ("Notch");
+        case Peak:          return TRANS ("Peak");
+        case HighShelf:     return TRANS ("High Shelf");
+        case LowPass1st:    return TRANS ("1st Low Pass");
+        case LowPass:       return TRANS ("Low Pass");
+        default:            return TRANS ("unknown");
+    }
 }
 
 void FrequalizerAudioProcessor::updateBand (const int index)

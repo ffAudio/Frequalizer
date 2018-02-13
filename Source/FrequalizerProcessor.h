@@ -32,14 +32,14 @@ public:
         Peak,
         HighShelf,
         LowPass1st,
-        LowPass
+        LowPass,
+        LastFilterID
     };
 
     static int numBands;
 
     static std::vector<Colour> bandColours;
     static std::vector<String> bandNames;
-    static std::vector<String> filterTypeNames;
 
     static String getTypeParamName (const int index);
     static String getFrequencyParamName (const int index);
@@ -65,6 +65,8 @@ public:
     AudioProcessorValueTreeState& getPluginState();
 
     FilterType getFilterType (const int index);
+
+    static String getFilterTypeName (const FilterType type);
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;

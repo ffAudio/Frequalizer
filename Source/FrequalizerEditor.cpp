@@ -85,9 +85,8 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
     frame.setColour (GroupComponent::outlineColourId, FrequalizerAudioProcessor::bandColours [i]);
     addAndMakeVisible (frame);
 
-    int bandCounter = 0;
-    for (auto& type : FrequalizerAudioProcessor::filterTypeNames)
-        filterType.addItem (type, ++bandCounter);
+    for (int i=0; i < FrequalizerAudioProcessor::LastFilterID; ++i)
+        filterType.addItem (FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType> (i)), i + 1);
 
     addAndMakeVisible (filterType);
     boxAttachments.add (new AudioProcessorValueTreeState::ComboBoxAttachment (processor.getPluginState(), processor.getTypeParamName (index), filterType));
