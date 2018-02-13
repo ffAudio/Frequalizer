@@ -47,15 +47,12 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
     auto bounds = getLocalBounds();
     for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
-        Path p;
-        processor.createFrequencyPlot (p, i, plotFrame);
+        auto* band = bandEditors.getUnchecked (i);
         g.setColour (processor.getBandColour (i));
-        g.strokePath (p, PathStrokeType (1.0));
+        g.strokePath (band->frequencyResponse, PathStrokeType (1.0));
     }
-    Path p;
-    processor.createFrequencyPlot (p, plotFrame);
     g.setColour (Colours::silver);
-    g.strokePath (p, PathStrokeType (1.0));
+    g.strokePath (frequencyResponse, PathStrokeType (1.0));
 
     Image logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
     g.drawImageWithin (logo, branding.getX(), branding.getY(), branding.getWidth(), branding.getHeight(),
@@ -76,14 +73,27 @@ void FrequalizerAudioProcessorEditor::resized()
 
     plotFrame.reduce (3, 3);
     branding = bandSpace.reduced (5);
+
+    for (int i=0; i < bandEditors.size(); ++i) {
+        auto* band = bandEditors.getUnchecked (i);
+        band->frequencyResponse.clear();
+        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame);
+    }
+    frequencyResponse.clear();
+    processor.createFrequencyPlot (frequencyResponse, plotFrame);
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)
 {
     ignoreUnused (sender);
     for (int i=0; i < bandEditors.size(); ++i) {
-        bandEditors.getUnchecked (i)->updateControls (processor.getFilterType (i));
+        auto* band = bandEditors.getUnchecked (i);
+        band->updateControls (processor.getFilterType (i));
+        band->frequencyResponse.clear();
+        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame);
     }
+    frequencyResponse.clear();
+    processor.createFrequencyPlot (frequencyResponse, plotFrame);
     repaint();
 }
 

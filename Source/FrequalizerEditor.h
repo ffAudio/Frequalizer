@@ -39,6 +39,7 @@ public:
 
         void updateControls (FrequalizerAudioProcessor::FilterType type);
 
+        Path frequencyResponse;
     private:
         int index;
 
@@ -63,6 +64,7 @@ private:
 
     Rectangle<int>          plotFrame;
     Rectangle<int>          branding;
+    Path                    frequencyResponse;
 
     GroupComponent          frame;
     Slider                  output;
