@@ -1,5 +1,6 @@
 Builds/MacOSX/build
-Builds/MacOSX/*.xcodeproj/xcuserdata
+**/*.xcodeproj/*.xcworkspace
+**/*.xcodeproj/xcuserdata
 
 Builds/VisualStudio2015/.vs
 Builds/VisualStudio2015/Debug
