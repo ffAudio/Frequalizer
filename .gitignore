@@ -1,8 +1,8 @@
-**/Builds/MaxOSX/build
-**/Builds/MacOSX/*.xcodeproj/xcuserdata
+Builds/MacOSX/build
+Builds/MacOSX/*.xcodeproj/xcuserdata
 
-**/Builds/VisualStudio2015/.vs
-**/Builds/VisualStudio2015/Debug
-**/Builds/VisualStudio2015/Release
-**/Builds/VisualStudio2015/*.opensdf
-**/Builds/VisualStudio2015/*.sdf
+Builds/VisualStudio2015/.vs
+Builds/VisualStudio2015/Debug
+Builds/VisualStudio2015/Release
+Builds/VisualStudio2015/*.opensdf
+Builds/VisualStudio2015/*.sdf
