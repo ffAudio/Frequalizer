@@ -25,7 +25,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     frame.setTextLabelPosition (Justification::centred);
     addAndMakeVisible (frame);
     addAndMakeVisible (output);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), "output", output));
+    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
 
     setResizable (true, false);
     setSize (800, 500);

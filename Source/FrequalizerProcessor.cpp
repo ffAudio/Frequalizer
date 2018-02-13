@@ -9,7 +9,13 @@
 #include "FrequalizerProcessor.h"
 #include "FrequalizerEditor.h"
 
-int FrequalizerAudioProcessor::numBands = 6;
+int    FrequalizerAudioProcessor::numBands = 6;
+String FrequalizerAudioProcessor::paramOutput   ("output");
+String FrequalizerAudioProcessor::paramType     ("type");
+String FrequalizerAudioProcessor::paramFrequency("frequency");
+String FrequalizerAudioProcessor::paramQuality  ("quality");
+String FrequalizerAudioProcessor::paramGain     ("gain");
+
 
 
 //==============================================================================
@@ -24,7 +30,7 @@ FrequalizerAudioProcessor::FrequalizerAudioProcessor()
 #endif
 state (*this, &undo)
 {
-    state.createAndAddParameter ("output", TRANS ("Output"), TRANS ("Output level"),
+    state.createAndAddParameter (paramOutput, TRANS ("Output"), TRANS ("Output level"),
                                  NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
                                  [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
                                  [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
@@ -87,7 +93,7 @@ state (*this, &undo)
         state.addParameterListener (getGainParamName (i), this);
     }
 
-    state.addParameterListener ("output", this);
+    state.addParameterListener (paramOutput, this);
 
     state.state = ValueTree (JucePlugin_Name);
 }
@@ -167,7 +173,7 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
     for (int i=0; i < numBands; ++i) {
         updateBand (i);
     }
-    filter.get<6>().setGainLinear (*state.getRawParameterValue ("output"));
+    filter.get<6>().setGainLinear (*state.getRawParameterValue (paramOutput));
 
     filter.prepare (spec);
 
@@ -210,27 +216,27 @@ AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
 
 String FrequalizerAudioProcessor::getTypeParamName (const int index) const
 {
-    return getBandName (index) + "-type";
+    return getBandName (index) + "-" + paramType;
 }
 
 String FrequalizerAudioProcessor::getFrequencyParamName (const int index) const
 {
-    return getBandName (index) + "-frequency";
+    return getBandName (index) + "-" + paramFrequency;
 }
 
 String FrequalizerAudioProcessor::getQualityParamName (const int index) const
 {
-    return getBandName (index) + "-quality";
+    return getBandName (index) + "-" + paramQuality;
 }
 
 String FrequalizerAudioProcessor::getGainParamName (const int index) const
 {
-    return getBandName (index) + "-gain";
+    return getBandName (index) + "-" + paramGain;
 }
 
 void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
 {
-    if (parameter == "output") {
+    if (parameter == paramOutput) {
         filter.get<6>().setGainLinear (newValue);
         updatePlots();
         return;
@@ -238,16 +244,16 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
 
     for (int i=0; i < bands.size(); ++i) {
         if (parameter.startsWith (getBandName (i) + "-")) {
-            if (parameter.endsWith ("type")) {
+            if (parameter.endsWith (paramType)) {
                 bands [i].type = static_cast<FilterType> (newValue);
             }
-            else if (parameter.endsWith ("frequency")) {
+            else if (parameter.endsWith (paramFrequency)) {
                 bands [i].frequency = newValue;
             }
-            else if (parameter.endsWith ("quality")) {
+            else if (parameter.endsWith (paramQuality)) {
                 bands [i].quality = newValue;
             }
-            else if (parameter.endsWith ("gain")) {
+            else if (parameter.endsWith (paramGain)) {
                 bands [i].gain = newValue;
             }
             

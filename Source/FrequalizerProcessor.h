@@ -37,6 +37,11 @@ public:
     };
 
     static int numBands;
+    static String paramOutput;
+    static String paramType;
+    static String paramFrequency;
+    static String paramQuality;
+    static String paramGain;
 
     String getTypeParamName (const int index) const;
     String getFrequencyParamName (const int index) const;
