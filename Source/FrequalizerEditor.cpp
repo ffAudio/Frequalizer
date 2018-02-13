@@ -42,7 +42,7 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
         Path p;
         processor.createFrequencyPlot (p, i, plot);
-        g.setColour (FrequalizerAudioProcessor::bandColours [i]);
+        g.setColour (processor.getBandColour (i));
         g.strokePath (p, PathStrokeType (1.0));
     }
     Path p;
@@ -79,10 +79,10 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
     quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
     gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
 {
-    frame.setText (FrequalizerAudioProcessor::bandNames [i]);
+    frame.setText (processor.getBandName (index));
     frame.setTextLabelPosition (Justification::centred);
-    frame.setColour (GroupComponent::textColourId, FrequalizerAudioProcessor::bandColours [i]);
-    frame.setColour (GroupComponent::outlineColourId, FrequalizerAudioProcessor::bandColours [i]);
+    frame.setColour (GroupComponent::textColourId, processor.getBandColour (index));
+    frame.setColour (GroupComponent::outlineColourId, processor.getBandColour (index));
     addAndMakeVisible (frame);
 
     for (int i=0; i < FrequalizerAudioProcessor::LastFilterID; ++i)

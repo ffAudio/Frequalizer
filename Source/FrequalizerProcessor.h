@@ -38,13 +38,10 @@ public:
 
     static int numBands;
 
-    static std::vector<Colour> bandColours;
-    static std::vector<String> bandNames;
-
-    static String getTypeParamName (const int index);
-    static String getFrequencyParamName (const int index);
-    static String getQualityParamName (const int index);
-    static String getGainParamName (const int index);
+    String getTypeParamName (const int index) const;
+    String getFrequencyParamName (const int index) const;
+    String getQualityParamName (const int index) const;
+    String getGainParamName (const int index) const;
 
     //==============================================================================
     FrequalizerAudioProcessor();
@@ -64,7 +61,9 @@ public:
 
     AudioProcessorValueTreeState& getPluginState();
 
-    FilterType getFilterType (const int index);
+    FilterType getFilterType (const int index) const;
+    String     getBandName   (const int index) const;
+    Colour     getBandColour (const int index) const;
 
     static String getFilterTypeName (const FilterType type);
 
@@ -104,6 +103,8 @@ private:
     AudioProcessorValueTreeState state;
 
     struct Band {
+        String      name;
+        Colour      colour;
         FilterType  type      = BandPass;
         double      frequency = 1000.0;
         double      quality   = 1.0;

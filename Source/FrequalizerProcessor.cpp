@@ -11,9 +11,6 @@
 
 int FrequalizerAudioProcessor::numBands = 6;
 
-std::vector<Colour> FrequalizerAudioProcessor::bandColours = {Colour (0xff0000ff), Colour (0xffa52a2a), Colour (0xff008000), Colour (0xffff00ff), Colour (0xffffa500), Colour (0xffff0000)};
-
-std::vector<String> FrequalizerAudioProcessor::bandNames   = {"Lowest", "Low", "Low mids", "High mids", "High", "Highest"};
 
 //==============================================================================
 FrequalizerAudioProcessor::FrequalizerAudioProcessor()
@@ -35,9 +32,19 @@ state (*this, &undo)
     bands.resize (numBands);
 
 
-    std::vector<double> freqDefaults       = {20.0,     250.0,     500.0,    1000.0,   5000.0,   10000.0};
-    std::vector<FilterType> filterDefaults = {HighPass, LowShelf, BandPass, BandPass, HighShelf, LowPass};
+    std::vector<String>     bandNames      = {"Lowest", "Low",     "Low mids", "High mids", "High",    "Highest"};
+    std::vector<double>     freqDefaults   = {20.0,     250.0,     500.0,      1000.0,      5000.0,    10000.0};
+    std::vector<FilterType> filterDefaults = {HighPass, LowShelf, BandPass,    BandPass,    HighShelf, LowPass};
+    std::vector<Colour>     bandColours    = {Colour (0xff0000ff), Colour (0xffa52a2a), Colour (0xff008000), Colour (0xffff00ff), Colour (0xffffa500), Colour (0xffff0000)};
+
+
     for (int i = 0; i < numBands; ++i) {
+        bands [i].name      = bandNames [i];
+        bands [i].colour    = bandColours [i];
+        bands [i].type      = filterDefaults [i];
+        bands [i].frequency = freqDefaults   [i];
+        bands [i].magnitudes.resize (frequencies.size(), 1.0);
+
         state.createAndAddParameter (getTypeParamName (i), bandNames [i] + " Type", TRANS ("Filter Type"),
                                      NormalisableRange<float> (0, LastFilterID, 1),
                                      filterDefaults [i],
@@ -68,9 +75,6 @@ state (*this, &undo)
                                      [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
                                      [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
                                      false, true, false);
-        bands [i].type      = filterDefaults [i];
-        bands [i].frequency = freqDefaults   [i];
-        bands [i].magnitudes.resize (frequencies.size(), 1.0);
 
         state.addParameterListener (getTypeParamName (i), this);
         state.addParameterListener (getFrequencyParamName (i), this);
@@ -195,42 +199,30 @@ AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
     return state;
 }
 
-String FrequalizerAudioProcessor::getTypeParamName (const int index)
+String FrequalizerAudioProcessor::getTypeParamName (const int index) const
 {
-    if (isPositiveAndBelow (index, FrequalizerAudioProcessor::bandNames.size()))
-        return FrequalizerAudioProcessor::bandNames [index] + "-type";
-
-    return "type";
+    return getBandName (index) + "-type";
 }
 
-String FrequalizerAudioProcessor::getFrequencyParamName (const int index)
+String FrequalizerAudioProcessor::getFrequencyParamName (const int index) const
 {
-    if (isPositiveAndBelow (index, FrequalizerAudioProcessor::bandNames.size()))
-        return FrequalizerAudioProcessor::bandNames [index] + "-frequency";
-
-    return "frequency";
+    return getBandName (index) + "-frequency";
 }
 
-String FrequalizerAudioProcessor::getQualityParamName (const int index)
+String FrequalizerAudioProcessor::getQualityParamName (const int index) const
 {
-    if (isPositiveAndBelow (index, FrequalizerAudioProcessor::bandNames.size()))
-        return FrequalizerAudioProcessor::bandNames [index] + "-quality";
-
-    return "quality";
+    return getBandName (index) + "-quality";
 }
 
-String FrequalizerAudioProcessor::getGainParamName (const int index)
+String FrequalizerAudioProcessor::getGainParamName (const int index) const
 {
-    if (isPositiveAndBelow (index, FrequalizerAudioProcessor::bandNames.size()))
-        return FrequalizerAudioProcessor::bandNames [index] + "-gain";
-
-    return "gain";
+    return getBandName (index) + "-gain";
 }
 
 void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
 {
-    for (int i=0; i < bandNames.size(); ++i) {
-        if (parameter.startsWith (bandNames [i] + "-")) {
+    for (int i=0; i < bands.size(); ++i) {
+        if (parameter.startsWith (getBandName (i) + "-")) {
             if (parameter.endsWith ("type")) {
                 bands [i].type = static_cast<FilterType> (newValue);
             }
@@ -250,12 +242,23 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
     }
 }
 
-FrequalizerAudioProcessor::FilterType FrequalizerAudioProcessor::getFilterType (const int index)
+FrequalizerAudioProcessor::FilterType FrequalizerAudioProcessor::getFilterType (const int index) const
 {
-    if (isPositiveAndBelow (index, bands.size())) {
+    if (isPositiveAndBelow (index, bands.size()))
         return bands [index].type;
-    }
     return AllPass;
+}
+String FrequalizerAudioProcessor::getBandName   (const int index) const
+{
+    if (isPositiveAndBelow (index, bands.size()))
+        return bands [index].name;
+    return TRANS ("unknown");
+}
+Colour FrequalizerAudioProcessor::getBandColour (const int index) const
+{
+    if (isPositiveAndBelow (index, bands.size()))
+        return bands [index].colour;
+    return Colours::silver;
 }
 
 String FrequalizerAudioProcessor::getFilterTypeName (const FilterType type)
