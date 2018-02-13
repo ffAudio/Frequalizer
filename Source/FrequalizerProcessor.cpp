@@ -24,10 +24,17 @@ FrequalizerAudioProcessor::FrequalizerAudioProcessor()
 #endif
 state (*this, &undo)
 {
+    state.createAndAddParameter ("output", TRANS ("Output"), TRANS ("Output level"),
+                                 NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
+                                 [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
+                                 [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
+                                 false, true, false);
+
     frequencies.resize (300);
     for (int i=0; i < frequencies.size(); ++i) {
         frequencies [i] = 20.0 * std::pow (2.0, i / 30.0);
     }
+    magnitudes.resize (frequencies.size());
 
     bands.resize (numBands);
 
@@ -79,6 +86,8 @@ state (*this, &undo)
         state.addParameterListener (getQualityParamName (i), this);
         state.addParameterListener (getGainParamName (i), this);
     }
+
+    state.addParameterListener ("output", this);
 
     state.state = ValueTree (JucePlugin_Name);
 }
@@ -158,6 +167,8 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
     for (int i=0; i < numBands; ++i) {
         updateBand (i);
     }
+    filter.get<6>().setGainLinear (*state.getRawParameterValue ("output"));
+
     filter.prepare (spec);
 
 }
@@ -219,6 +230,12 @@ String FrequalizerAudioProcessor::getGainParamName (const int index) const
 
 void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
 {
+    if (parameter == "output") {
+        filter.get<6>().setGainLinear (newValue);
+        updatePlots();
+        return;
+    }
+
     for (int i=0; i < bands.size(); ++i) {
         if (parameter.startsWith (getBandName (i) + "-")) {
             if (parameter.endsWith ("type")) {
@@ -341,16 +358,24 @@ void FrequalizerAudioProcessor::updateBand (const int index)
                 else if (index == 5)
                     *filter.get<5>().state = *newCoefficients;
             }
-
             newCoefficients->getMagnitudeForFrequencyArray (frequencies.data(),
                                                             bands [index].magnitudes.data(),
                                                             frequencies.size(), sampleRate);
-            magnitudes = bands [0].magnitudes;
-            for (int i=1; i < bands.size(); ++i) {
-                FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
-            }
+
         }
+        updatePlots();
     }
+}
+
+void FrequalizerAudioProcessor::updatePlots ()
+{
+    auto gain = filter.get<6>().getGainLinear();
+    std::fill (magnitudes.begin(), magnitudes.end(), gain);
+
+    for (int i=0; i < bands.size(); ++i) {
+        FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
+    }
+
     sendChangeMessage();
 }
 

@@ -12,7 +12,8 @@
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
+  : AudioProcessorEditor (&p), processor (p),
+    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
 {
 
     for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
@@ -20,8 +21,14 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
         addAndMakeVisible (bandEditor);
     }
 
+    frame.setText (TRANS ("Output"));
+    frame.setTextLabelPosition (Justification::centred);
+    addAndMakeVisible (frame);
+    addAndMakeVisible (output);
+    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), "output", output));
+
     setResizable (true, false);
-    setSize (770, 500);
+    setSize (800, 500);
     processor.addChangeListener (this);
 }
 
@@ -57,9 +64,12 @@ void FrequalizerAudioProcessorEditor::resized()
     plot = getLocalBounds().reduced (3, 3);
 
     auto bandSpace = plot.removeFromBottom (getHeight() / 2);
-    float width = static_cast<float> (bandSpace.getWidth()) / bandEditors.size();
+    float width = static_cast<float> (bandSpace.getWidth()) / (bandEditors.size() + 1);
     for (auto* band : bandEditors)
         band->setBounds (bandSpace.removeFromLeft (width));
+
+    frame.setBounds (bandSpace.removeFromTop (bandSpace.getHeight() / 2.0));
+    output.setBounds (frame.getBounds().reduced (8));
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)

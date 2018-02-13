@@ -62,4 +62,10 @@ private:
     OwnedArray<BandEditor>  bandEditors;
 
     Rectangle<int>          plot;
+
+    GroupComponent          frame;
+    Slider                  output;
+
+    OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
+
 };
