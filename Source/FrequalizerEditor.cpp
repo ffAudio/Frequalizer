@@ -28,7 +28,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
 
     setResizable (true, false);
-    setSize (800, 500);
+    setSize (840, 500);
     processor.addChangeListener (this);
 }
 
@@ -48,28 +48,34 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     auto bounds = getLocalBounds();
     for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
         Path p;
-        processor.createFrequencyPlot (p, i, plot);
+        processor.createFrequencyPlot (p, i, plotFrame);
         g.setColour (processor.getBandColour (i));
         g.strokePath (p, PathStrokeType (1.0));
     }
     Path p;
-    processor.createFrequencyPlot (p, plot);
+    processor.createFrequencyPlot (p, plotFrame);
     g.setColour (Colours::silver);
     g.strokePath (p, PathStrokeType (1.0));
 
+    Image logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
+    g.drawImageWithin (logo, branding.getX(), branding.getY(), branding.getWidth(), branding.getHeight(),
+                       RectanglePlacement (RectanglePlacement::fillDestination));
 }
 
 void FrequalizerAudioProcessorEditor::resized()
 {
-    plot = getLocalBounds().reduced (3, 3);
+    plotFrame = getLocalBounds().reduced (3, 3);
 
-    auto bandSpace = plot.removeFromBottom (getHeight() / 2);
+    auto bandSpace = plotFrame.removeFromBottom (getHeight() / 2);
     float width = static_cast<float> (bandSpace.getWidth()) / (bandEditors.size() + 1);
     for (auto* band : bandEditors)
         band->setBounds (bandSpace.removeFromLeft (width));
 
     frame.setBounds (bandSpace.removeFromTop (bandSpace.getHeight() / 2.0));
     output.setBounds (frame.getBounds().reduced (8));
+
+    plotFrame.reduce (3, 3);
+    branding = bandSpace.reduced (5);
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)

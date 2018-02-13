@@ -61,7 +61,8 @@ private:
 
     OwnedArray<BandEditor>  bandEditors;
 
-    Rectangle<int>          plot;
+    Rectangle<int>          plotFrame;
+    Rectangle<int>          branding;
 
     GroupComponent          frame;
     Slider                  output;
