@@ -31,12 +31,10 @@ state (*this, &undo)
 
     bands.resize (numBands);
 
-
     std::vector<String>     bandNames      = {"Lowest", "Low",     "Low mids", "High mids", "High",    "Highest"};
     std::vector<double>     freqDefaults   = {20.0,     250.0,     500.0,      1000.0,      5000.0,    10000.0};
     std::vector<FilterType> filterDefaults = {HighPass, LowShelf, BandPass,    BandPass,    HighShelf, LowPass};
-    std::vector<Colour>     bandColours    = {Colour (0xff0000ff), Colour (0xffa52a2a), Colour (0xff008000), Colour (0xffff00ff), Colour (0xffffa500), Colour (0xffff0000)};
-
+    std::vector<Colour>     bandColours    = {Colours::blue, Colours::brown, Colours::green, Colours::coral, Colours::orange, Colours::red};
 
     for (int i = 0; i < numBands; ++i) {
         bands [i].name      = bandNames [i];

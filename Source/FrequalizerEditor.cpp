@@ -93,12 +93,15 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
 
     addAndMakeVisible (frequency);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getFrequencyParamName (index), frequency));
+    frequency.setSkewFactorFromMidPoint (1000.0);
 
     addAndMakeVisible (quality);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getQualityParamName (index), quality));
+    quality.setSkewFactorFromMidPoint (1.0);
 
     addAndMakeVisible (gain);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
+    gain.setSkewFactorFromMidPoint (1.0);
 
     updateControls (processor.getFilterType (index));
 }

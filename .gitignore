@@ -1,4 +1,5 @@
 Builds/MacOSX/build
+Builds/MacOSX/*.xcodeproj/project.xcworkspace
 **/xcworkspace
 **/xcuserdata
 
