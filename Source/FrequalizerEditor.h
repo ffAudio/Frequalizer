@@ -43,11 +43,11 @@ public:
     private:
         int index;
 
-        GroupComponent frame;
-        ComboBox       filterType;
-        Slider         frequency;
-        Slider         quality;
-        Slider         gain;
+        GroupComponent      frame;
+        ComboBox            filterType;
+        TextFormattedSlider frequency;
+        TextFormattedSlider quality;
+        TextFormattedSlider gain;
         OwnedArray<AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
         OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
     };
@@ -67,7 +67,7 @@ private:
     Path                    frequencyResponse;
 
     GroupComponent          frame;
-    Slider                  output;
+    TextFormattedSlider     output;
 
     OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
 

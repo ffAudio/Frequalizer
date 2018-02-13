@@ -6,6 +6,7 @@
   ==============================================================================
 */
 
+#include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
 #include "FrequalizerEditor.h"
 

@@ -6,6 +6,7 @@
   ==============================================================================
 */
 
+#include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
 #include "FrequalizerEditor.h"
 
@@ -13,7 +14,7 @@
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
   : AudioProcessorEditor (&p), processor (p),
-    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
+    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
 {
 
     for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
@@ -101,9 +102,9 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
 //==============================================================================
 FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, FrequalizerAudioProcessor& processor)
   : index (i),
-    frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
-    quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
-    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
+    frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::Hertz),
+    quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::RawNumber),
+    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
 {
     frame.setText (processor.getBandName (index));
     frame.setTextLabelPosition (Justification::centred);

@@ -2169,6 +2169,9 @@
     <ClInclude Include="..\..\Source\FrequalizerEditor.h">
       <Filter>Frequalizer\Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\LabeledSlider.h">
+      <Filter>Frequalizer\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\..\JUCE5\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">
       <Filter>JUCE Modules\juce_audio_basics\audio_play_head</Filter>
     </ClInclude>

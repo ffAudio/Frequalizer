@@ -1803,6 +1803,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source\FrequalizerProcessor.h"/>
     <ClInclude Include="..\..\Source\FrequalizerEditor.h"/>
+    <ClInclude Include="..\..\Source\LabeledSlider.h"/>
     <ClInclude Include="..\..\..\..\..\JUCE5\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h"/>
     <ClInclude Include="..\..\..\..\..\JUCE5\modules\juce_audio_basics\buffers\juce_AudioChannelSet.h"/>
     <ClInclude Include="..\..\..\..\..\JUCE5\modules\juce_audio_basics\buffers\juce_AudioDataConverters.h"/>

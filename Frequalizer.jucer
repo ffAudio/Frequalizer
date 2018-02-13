@@ -18,6 +18,7 @@
             file="Source/FrequalizerEditor.cpp"/>
       <FILE id="JWCkWt" name="FrequalizerEditor.h" compile="0" resource="0"
             file="Source/FrequalizerEditor.h"/>
+      <FILE id="c3BVBd" name="LabeledSlider.h" compile="0" resource="0" file="Source/LabeledSlider.h"/>
     </GROUP>
     <FILE id="uH1wMg" name="Logo-FF.png" compile="0" resource="1" file="Resources/Logo-FF.png"/>
   </MAINGROUP>

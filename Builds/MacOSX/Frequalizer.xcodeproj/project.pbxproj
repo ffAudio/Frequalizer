@@ -97,6 +97,7 @@
 		CAB78833921F314423E85788 = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		DB214C1D2CD359A2993DDFA3 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-VST.plist"; path = "Info-VST.plist"; sourceTree = "SOURCE_ROOT"; };
 		DBA384807E368076517C313F = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		ECD9A068E11C1ACE899645B4 = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LabeledSlider.h; path = ../../Source/LabeledSlider.h; sourceTree = "SOURCE_ROOT"; };
 		EDF53B333E34DF60C10E97E1 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Frequalizer.component; sourceTree = "BUILT_PRODUCTS_DIR"; };
 		5DB325FBE1FE427C3EAFC6CE = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrequalizer.a; sourceTree = "BUILT_PRODUCTS_DIR"; };
 		E8252D5114641282038C5615 = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AppConfig.h; path = ../../JuceLibraryCode/AppConfig.h; sourceTree = "SOURCE_ROOT"; };
@@ -108,7 +109,8 @@
 					BBEA92CA881511CFF8AB91CE,
 					2843A8272E42919D6AB02EAD,
 					2665E9763927A6C1F2EF8360,
-					221173B2065BC312EFF6165A, ); name = Source; sourceTree = "<group>"; };
+					221173B2065BC312EFF6165A,
+					ECD9A068E11C1ACE899645B4, ); name = Source; sourceTree = "<group>"; };
 		0949119D77671DB7683779F8 = {isa = PBXGroup; children = (
 					0E392FAF25A2AE62C93BF4F2,
 					ABCFB47CF67E2E7FB7BC1463, ); name = Frequalizer; sourceTree = "<group>"; };
