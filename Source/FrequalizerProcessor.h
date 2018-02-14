@@ -36,7 +36,6 @@ public:
         LastFilterID
     };
 
-    static int numBands;
     static String paramOutput;
     static String paramType;
     static String paramFrequency;
@@ -65,6 +64,8 @@ public:
     void parameterChanged (const String& parameter, float newValue) override;
 
     AudioProcessorValueTreeState& getPluginState();
+
+    int getNumBands () const;
 
     FilterType getFilterType (const int index) const;
     String     getBandName   (const int index) const;

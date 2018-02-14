@@ -17,7 +17,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
 {
 
-    for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
+    for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.add (new BandEditor (i, processor));
         addAndMakeVisible (bandEditor);
     }
@@ -47,7 +47,7 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.setFont (15.0f);
 
     auto bounds = getLocalBounds();
-    for (int i=0; i < FrequalizerAudioProcessor::numBands; ++i) {
+    for (int i=0; i < processor.getNumBands(); ++i) {
         auto* band = bandEditors.getUnchecked (i);
         g.setColour (processor.getBandColour (i));
         g.strokePath (band->frequencyResponse, PathStrokeType (1.0));

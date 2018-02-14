@@ -10,7 +10,7 @@
 #include "FrequalizerProcessor.h"
 #include "FrequalizerEditor.h"
 
-int    FrequalizerAudioProcessor::numBands = 6;
+
 String FrequalizerAudioProcessor::paramOutput   ("output");
 String FrequalizerAudioProcessor::paramType     ("type");
 String FrequalizerAudioProcessor::paramFrequency("frequency");
@@ -43,23 +43,61 @@ state (*this, &undo)
     }
     magnitudes.resize (frequencies.size());
 
-    bands.resize (numBands);
+    // needs to be in sync with the ProcessorChain filter
+    bands.resize (6);
 
-    std::vector<String>     bandNames      = {"Lowest", "Low",     "Low mids", "High mids", "High",    "Highest"};
-    std::vector<double>     freqDefaults   = {20.0,     250.0,     500.0,      1000.0,      5000.0,    10000.0};
-    std::vector<FilterType> filterDefaults = {HighPass, LowShelf, BandPass,    BandPass,    HighShelf, LowPass};
-    std::vector<Colour>     bandColours    = {Colours::blue, Colours::brown, Colours::green, Colours::coral, Colours::orange, Colours::red};
+    // setting defaults
+    {
+        auto& band = bands [0];
+        band.name       = "Lowest";
+        band.colour     = Colours::blue;
+        band.frequency  = 20.0;
+        band.type       = HighPass;
+    }
+    {
+        auto& band = bands [1];
+        band.name       = "Low";
+        band.colour     = Colours::brown;
+        band.frequency  = 250.0;
+        band.type       = LowShelf;
+    }
+    {
+        auto& band = bands [2];
+        band.name       = "Low Mids";
+        band.colour     = Colours::green;
+        band.frequency  = 500.0;
+        band.type       = Peak;
+    }
+    {
+        auto& band = bands [3];
+        band.name       = "High Mids";
+        band.colour     = Colours::coral;
+        band.frequency  = 1000.0;
+        band.type       = Peak;
+    }
+    {
+        auto& band = bands [4];
+        band.name       = "High";
+        band.colour     = Colours::orange;
+        band.frequency  = 5000.0;
+        band.type       = HighShelf;
+    }
+    {
+        auto& band = bands [5];
+        band.name       = "Highest";
+        band.colour     = Colours::red;
+        band.frequency  = 12000.0;
+        band.type       = LowPass;
+    }
 
-    for (int i = 0; i < numBands; ++i) {
-        bands [i].name      = bandNames [i];
-        bands [i].colour    = bandColours [i];
-        bands [i].type      = filterDefaults [i];
-        bands [i].frequency = freqDefaults   [i];
-        bands [i].magnitudes.resize (frequencies.size(), 1.0);
+    for (int i = 0; i < bands.size(); ++i) {
+        auto& band = bands [i];
 
-        state.createAndAddParameter (getTypeParamName (i), bandNames [i] + " Type", TRANS ("Filter Type"),
+        band.magnitudes.resize (frequencies.size(), 1.0);
+
+        state.createAndAddParameter (getTypeParamName (i), band.name + " Type", TRANS ("Filter Type"),
                                      NormalisableRange<float> (0, LastFilterID, 1),
-                                     filterDefaults [i],
+                                     band.type,
                                      [](float value) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(value)); },
                                      [](String text) {
                                          for (int i=0; i < LastFilterID; ++i)
@@ -68,9 +106,9 @@ state (*this, &undo)
                                          return NoFilter; },
                                      false, true, true);
 
-        state.createAndAddParameter (getFrequencyParamName (i), bandNames [i] + " freq", "Frequency",
+        state.createAndAddParameter (getFrequencyParamName (i), band.name + " freq", "Frequency",
                                      NormalisableRange<float> (20.0, 20000.0, 1.0),
-                                     freqDefaults [i],
+                                     band.frequency,
                                      [](float value) { return (value < 1000) ?
                                          String (value, 0) + " Hz" :
                                          String (value / 1000.0, 2) + " kHz"; },
@@ -78,12 +116,14 @@ state (*this, &undo)
                                          text.dropLastCharacters (4).getFloatValue() * 1000.0 :
                                          text.dropLastCharacters (3).getFloatValue(); },
                                      false, true, false);
-        state.createAndAddParameter (getQualityParamName (i), bandNames [i] + " Q", TRANS ("Quality"),
+        state.createAndAddParameter (getQualityParamName (i), band.name + " Q", TRANS ("Quality"),
                                      NormalisableRange<float> (0.1, 10.0, 0.1),
-                                     1.0, nullptr, nullptr,
+                                     band.quality,
+                                     nullptr, nullptr,
                                      false, true, false);
-        state.createAndAddParameter (getGainParamName (i), bandNames [i] + " gain", TRANS ("Gain"),
-                                     NormalisableRange<float> (0.25f, 4.0f, 0.001f), 1.0f,
+        state.createAndAddParameter (getGainParamName (i), band.name + " gain", TRANS ("Gain"),
+                                     NormalisableRange<float> (0.25f, 4.0f, 0.001f),
+                                     band.gain,
                                      [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
                                      [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
                                      false, true, false);
@@ -171,10 +211,12 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
     spec.maximumBlockSize = newSamplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels ();
 
-    for (int i=0; i < numBands; ++i) {
+    for (int i=0; i < bands.size(); ++i) {
         updateBand (i);
     }
     filter.get<6>().setGainLinear (*state.getRawParameterValue (paramOutput));
+
+    updatePlots();
 
     filter.prepare (spec);
 
@@ -262,6 +304,11 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
             return;
         }
     }
+}
+
+int FrequalizerAudioProcessor::getNumBands () const
+{
+    return static_cast<int> (bands.size());
 }
 
 FrequalizerAudioProcessor::FilterType FrequalizerAudioProcessor::getFilterType (const int index) const
