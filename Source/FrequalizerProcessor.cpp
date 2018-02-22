@@ -16,6 +16,7 @@ String FrequalizerAudioProcessor::paramType     ("type");
 String FrequalizerAudioProcessor::paramFrequency("frequency");
 String FrequalizerAudioProcessor::paramQuality  ("quality");
 String FrequalizerAudioProcessor::paramGain     ("gain");
+String FrequalizerAudioProcessor::paramActive   ("active");
 
 
 
@@ -127,11 +128,18 @@ state (*this, &undo)
                                      [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
                                      [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
                                      false, true, false);
+        state.createAndAddParameter (getActiveParamName (i), band.name + " active", TRANS ("Active"),
+                                     NormalisableRange<float> (0, 1, 1),
+                                     band.active,
+                                     [](float value) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
+                                     [](String text) {return text == TRANS ("active");},
+                                     false, true, true);
 
         state.addParameterListener (getTypeParamName (i), this);
         state.addParameterListener (getFrequencyParamName (i), this);
         state.addParameterListener (getQualityParamName (i), this);
         state.addParameterListener (getGainParamName (i), this);
+        state.addParameterListener (getActiveParamName (i), this);
     }
 
     state.addParameterListener (paramOutput, this);
@@ -277,6 +285,11 @@ String FrequalizerAudioProcessor::getGainParamName (const int index) const
     return getBandName (index) + "-" + paramGain;
 }
 
+String FrequalizerAudioProcessor::getActiveParamName (const int index) const
+{
+    return getBandName (index) + "-" + paramActive;
+}
+
 void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
 {
     if (parameter == paramOutput) {
@@ -299,7 +312,10 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
             else if (parameter.endsWith (paramGain)) {
                 bands [i].gain = newValue;
             }
-            
+            else if (parameter.endsWith (paramActive)) {
+                bands [i].active = newValue;
+            }
+
             updateBand (i);
             return;
         }
@@ -328,6 +344,45 @@ Colour FrequalizerAudioProcessor::getBandColour (const int index) const
     if (isPositiveAndBelow (index, bands.size()))
         return bands [index].colour;
     return Colours::silver;
+}
+
+void FrequalizerAudioProcessor::setBandSolo (const int index)
+{
+    soloed = index;
+    updateBypassedStates();
+}
+
+void FrequalizerAudioProcessor::updateBypassedStates ()
+{
+    if (isPositiveAndBelow (soloed, bands.size())) {
+        filter.setBypassed<0>(soloed != 0);
+        filter.setBypassed<1>(soloed != 1);
+        filter.setBypassed<2>(soloed != 2);
+        filter.setBypassed<3>(soloed != 3);
+        filter.setBypassed<4>(soloed != 4);
+        filter.setBypassed<5>(soloed != 5);
+    }
+    else {
+        filter.setBypassed<0>(!bands[0].active);
+        filter.setBypassed<1>(!bands[1].active);
+        filter.setBypassed<2>(!bands[2].active);
+        filter.setBypassed<3>(!bands[3].active);
+        filter.setBypassed<4>(!bands[4].active);
+        filter.setBypassed<5>(!bands[5].active);
+    }
+    updatePlots();
+}
+
+bool FrequalizerAudioProcessor::getBandSolo (const int index) const
+{
+    return index == soloed;
+}
+
+FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (const int index)
+{
+    if (isPositiveAndBelow (index, bands.size()))
+        return &bands [index];
+    return nullptr;
 }
 
 String FrequalizerAudioProcessor::getFilterTypeName (const FilterType type)
@@ -417,6 +472,7 @@ void FrequalizerAudioProcessor::updateBand (const int index)
                                                             frequencies.size(), sampleRate);
 
         }
+        updateBypassedStates();
         updatePlots();
     }
 }
@@ -426,8 +482,14 @@ void FrequalizerAudioProcessor::updatePlots ()
     auto gain = filter.get<6>().getGainLinear();
     std::fill (magnitudes.begin(), magnitudes.end(), gain);
 
-    for (int i=0; i < bands.size(); ++i) {
-        FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
+    if (isPositiveAndBelow (soloed, bands.size())) {
+        FloatVectorOperations::multiply (magnitudes.data(), bands [soloed].magnitudes.data(), static_cast<int> (magnitudes.size()));
+    }
+    else
+    {
+        for (int i=0; i < bands.size(); ++i)
+            if (bands[i].active)
+                FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
     }
 
     sendChangeMessage();

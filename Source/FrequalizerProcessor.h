@@ -41,11 +41,13 @@ public:
     static String paramFrequency;
     static String paramQuality;
     static String paramGain;
+    static String paramActive;
 
     String getTypeParamName (const int index) const;
     String getFrequencyParamName (const int index) const;
     String getQualityParamName (const int index) const;
     String getGainParamName (const int index) const;
+    String getActiveParamName (const int index) const;
 
     //==============================================================================
     FrequalizerAudioProcessor();
@@ -70,6 +72,9 @@ public:
     FilterType getFilterType (const int index) const;
     String     getBandName   (const int index) const;
     Colour     getBandColour (const int index) const;
+
+    void setBandSolo (const int index);
+    bool getBandSolo (const int index) const;
 
     static String getFilterTypeName (const FilterType type);
 
@@ -99,17 +104,7 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FrequalizerAudioProcessor)
-
-    void updateBand (const int index);
-
-    void updatePlots ();
-
-    UndoManager                  undo;
-    AudioProcessorValueTreeState state;
-
     struct Band {
         String      name;
         Colour      colour;
@@ -117,9 +112,24 @@ private:
         double      frequency = 1000.0;
         double      quality   = 1.0;
         double      gain      = 1.0;
-        bool        active    = false;
+        bool        active    = true;
         std::vector<double> magnitudes;
     };
+
+    Band* getBand (const int index);
+
+private:
+    //==============================================================================
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FrequalizerAudioProcessor)
+
+    void updateBand (const int index);
+
+    void updateBypassedStates ();
+
+    void updatePlots ();
+
+    UndoManager                  undo;
+    AudioProcessorValueTreeState state;
 
     std::vector<Band>    bands;
 
@@ -133,5 +143,7 @@ private:
     dsp::ProcessorChain<FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, Gain> filter;
 
     double sampleRate = 0;
+
+    int soloed = -1;
 
 };

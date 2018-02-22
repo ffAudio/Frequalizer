@@ -30,7 +30,8 @@ public:
 
     //==============================================================================
 
-    class BandEditor : public Component
+    class BandEditor : public Component,
+                       public Button::Listener
     {
     public:
         BandEditor (const int i, FrequalizerAudioProcessor& processor);
@@ -39,17 +40,25 @@ public:
 
         void updateControls (FrequalizerAudioProcessor::FilterType type);
 
+        void updateSoloState (const bool isSolo);
+
+        void buttonClicked (Button* b) override;
+
         Path frequencyResponse;
     private:
         int index;
+        FrequalizerAudioProcessor& processor;
 
         GroupComponent      frame;
         ComboBox            filterType;
         TextFormattedSlider frequency;
         TextFormattedSlider quality;
         TextFormattedSlider gain;
+        TextButton          solo;
+        TextButton          activate;
         OwnedArray<AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
         OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
+        OwnedArray<AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
     };
 
 

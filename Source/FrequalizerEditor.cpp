@@ -29,7 +29,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
 
     setResizable (true, false);
-    setSize (840, 500);
+    setSize (880, 500);
     processor.addChangeListener (this);
 }
 
@@ -92,6 +92,7 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
         band->updateControls (processor.getFilterType (i));
         band->frequencyResponse.clear();
         processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame);
+        band->updateSoloState (processor.getBandSolo (i));
     }
     frequencyResponse.clear();
     processor.createFrequencyPlot (frequencyResponse, plotFrame);
@@ -100,11 +101,14 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
 
 
 //==============================================================================
-FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, FrequalizerAudioProcessor& processor)
+FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, FrequalizerAudioProcessor& p)
   : index (i),
+    processor (p),
     frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::Hertz),
     quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::RawNumber),
-    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
+    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB),
+    solo      (TRANS ("S")),
+    activate  (TRANS ("A"))
 {
     frame.setText (processor.getBandName (index));
     frame.setTextLabelPosition (Justification::centred);
@@ -130,6 +134,16 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
     gain.setSkewFactorFromMidPoint (1.0);
 
+    solo.setClickingTogglesState (true);
+    solo.addListener (this);
+    solo.setColour (TextButton::buttonOnColourId, Colours::yellow);
+    addAndMakeVisible (solo);
+
+    activate.setClickingTogglesState (true);
+    activate.setColour (TextButton::buttonOnColourId, Colours::green);
+    buttonAttachments.add (new AudioProcessorValueTreeState::ButtonAttachment (processor.getPluginState(), processor.getActiveParamName (index), activate));
+    addAndMakeVisible (activate);
+
     updateControls (processor.getFilterType (index));
 }
 
@@ -142,7 +156,13 @@ void FrequalizerAudioProcessorEditor::BandEditor::resized ()
 
     filterType.setBounds (bounds.removeFromTop (20));
 
-    frequency.setBounds (bounds.removeFromBottom (bounds.getHeight() * 2 / 3));
+    auto freqBounds = bounds.removeFromBottom (bounds.getHeight() * 2 / 3);
+    frequency.setBounds (freqBounds.withTop (freqBounds.getY() + 10));
+
+    auto buttons = freqBounds.reduced (5).withHeight (20);
+    solo.setBounds (buttons.removeFromLeft (20));
+    activate.setBounds (buttons.removeFromRight (20));
+
     quality.setBounds (bounds.removeFromLeft (bounds.getWidth() / 2));
     gain.setBounds (bounds);
 }
@@ -190,3 +210,16 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
             break;
     }
 }
+
+void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (const bool isSolo)
+{
+    solo.setToggleState (isSolo, dontSendNotification);
+}
+
+void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)
+{
+    if (b == &solo) {
+        processor.setBandSolo (solo.getToggleState() ? index : -1);
+    }
+}
+
