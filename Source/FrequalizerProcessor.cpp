@@ -341,8 +341,10 @@ String FrequalizerAudioProcessor::getBandName   (const int index) const
 }
 Colour FrequalizerAudioProcessor::getBandColour (const int index) const
 {
-    if (isPositiveAndBelow (index, bands.size()))
-        return bands [index].colour;
+    if (isPositiveAndBelow (index, bands.size())) {
+        auto& band = bands [index];
+        return band.active ? band.colour : band.colour.withAlpha (0.3f);
+    }
     return Colours::silver;
 }
 
