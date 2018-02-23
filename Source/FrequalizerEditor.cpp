@@ -49,7 +49,9 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     auto bounds = getLocalBounds();
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* band = bandEditors.getUnchecked (i);
-        g.setColour (processor.getBandColour (i));
+        g.setColour (processor.getBandActive (i) ?
+                     processor.getBandColour (i) :
+                     processor.getBandColour (i).withAlpha (0.3f));
         g.strokePath (band->frequencyResponse, PathStrokeType (1.0));
     }
     g.setColour (Colours::silver);

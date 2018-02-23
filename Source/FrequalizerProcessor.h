@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This is the Fruequalizer processor
+    This is the Frequalizer processor
 
   ==============================================================================
 */
@@ -72,6 +72,7 @@ public:
     FilterType getFilterType (const int index) const;
     String     getBandName   (const int index) const;
     Colour     getBandColour (const int index) const;
+    bool       getBandActive (const int index) const;
 
     void setBandSolo (const int index);
     bool getBandSolo (const int index) const;
