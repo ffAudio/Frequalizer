@@ -53,6 +53,7 @@ state (*this, &undo)
         band.name       = "Lowest";
         band.colour     = Colours::blue;
         band.frequency  = 20.0;
+        band.quality    = 0.5;
         band.type       = HighPass;
     }
     {
@@ -88,6 +89,7 @@ state (*this, &undo)
         band.name       = "Highest";
         band.colour     = Colours::red;
         band.frequency  = 12000.0;
+        band.quality    = 0.5;
         band.type       = LowPass;
     }
 
@@ -327,12 +329,6 @@ int FrequalizerAudioProcessor::getNumBands () const
     return static_cast<int> (bands.size());
 }
 
-FrequalizerAudioProcessor::FilterType FrequalizerAudioProcessor::getFilterType (const int index) const
-{
-    if (isPositiveAndBelow (index, bands.size()))
-        return bands [index].type;
-    return AllPass;
-}
 String FrequalizerAudioProcessor::getBandName   (const int index) const
 {
     if (isPositiveAndBelow (index, bands.size()))
@@ -344,12 +340,6 @@ Colour FrequalizerAudioProcessor::getBandColour (const int index) const
     if (isPositiveAndBelow (index, bands.size()))
         return bands [index].colour;
     return Colours::silver;
-}
-bool FrequalizerAudioProcessor::getBandActive (const int index) const
-{
-    if (isPositiveAndBelow (index, bands.size()))
-        return bands [index].active;
-    return false;
 }
 
 void FrequalizerAudioProcessor::setBandSolo (const int index)
@@ -419,7 +409,7 @@ void FrequalizerAudioProcessor::updateBand (const int index)
                 newCoefficients = new dsp::IIR::Coefficients<float> (1, 0, 1, 0);
                 break;
             case LowPass:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, bands [index].frequency);
+                newCoefficients = dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case LowPass1st:
                 newCoefficients = dsp::IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, bands [index].frequency);
@@ -512,25 +502,18 @@ AudioProcessorEditor* FrequalizerAudioProcessor::createEditor()
     return new FrequalizerAudioProcessorEditor (*this);
 }
 
-void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const Rectangle<int> bounds)
+const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
 {
-    auto yFactor = 0.5 * bounds.getHeight();
-    p.startNewSubPath (bounds.getX(), bounds.getBottom() - yFactor * magnitudes [0]);
-    const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
-    for (int i=1; i < frequencies.size(); ++i) {
-        p.lineTo (bounds.getX() + i * xFactor, bounds.getBottom() - yFactor * magnitudes [i]);
-    }
+    return magnitudes;
 }
 
-void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const int index, const Rectangle<int> bounds)
+void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds)
 {
-    auto& m = bands [index].magnitudes;
-
-    auto yFactor = 0.5 * bounds.getHeight();
-    p.startNewSubPath (bounds.getX(), bounds.getBottom() - yFactor * m [0]);
+    auto yFactor = 0.25 * bounds.getHeight();
+    p.startNewSubPath (bounds.getX(), bounds.getCentreY() - yFactor * std::log (mags [0]) / std::log (2));
     const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
     for (int i=1; i < frequencies.size(); ++i) {
-        p.lineTo (bounds.getX() + i * xFactor, bounds.getBottom() - yFactor * m [i]);
+        p.lineTo (bounds.getX() + i * xFactor, bounds.getCentreY() - yFactor * std::log (mags [i]) / std::log (2));
     }
 }
 

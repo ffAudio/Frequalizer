@@ -68,6 +68,8 @@ public:
 
 private:
 
+    void updateFrequencyResponses ();
+
     static float getPositionForFrequency (const float freq);
 
     static float getFrequencyForPosition (const float pos);

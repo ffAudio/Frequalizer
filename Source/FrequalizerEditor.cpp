@@ -30,6 +30,9 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
 
     setResizable (true, false);
     setSize (880, 500);
+
+    updateFrequencyResponses();
+
     processor.addChangeListener (this);
 }
 
@@ -41,6 +44,8 @@ FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 //==============================================================================
 void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 {
+    Graphics::ScopedSaveState state (g);
+
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
 
     auto bounds = getLocalBounds();
@@ -56,6 +61,18 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
                           x + 3, plotFrame.getBottom() - 18, 50, 15, Justification::left, 1);
     }
 
+    g.drawHorizontalLine (plotFrame.getY() + 0.25 * plotFrame.getHeight(), plotFrame.getX(), plotFrame.getRight());
+    g.drawHorizontalLine (plotFrame.getY() + 0.75 * plotFrame.getHeight(), plotFrame.getX(), plotFrame.getRight());
+    g.drawFittedText ("+12 dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
+    g.drawFittedText ("+6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+    g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+    g.drawFittedText ("-6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+
+    Image logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
+    g.drawImageWithin (logo, branding.getX(), branding.getY(), branding.getWidth(), branding.getHeight(),
+                       RectanglePlacement (RectanglePlacement::fillDestination));
+
+    g.reduceClipRegion (plotFrame);
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (i);
         auto* band = processor.getBand (i);
@@ -68,9 +85,6 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.setColour (Colours::silver);
     g.strokePath (frequencyResponse, PathStrokeType (1.0));
 
-    Image logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
-    g.drawImageWithin (logo, branding.getX(), branding.getY(), branding.getWidth(), branding.getHeight(),
-                       RectanglePlacement (RectanglePlacement::fillDestination));
 }
 
 void FrequalizerAudioProcessorEditor::resized()
@@ -79,8 +93,8 @@ void FrequalizerAudioProcessorEditor::resized()
 
     auto bandSpace = plotFrame.removeFromBottom (getHeight() / 2);
     float width = static_cast<float> (bandSpace.getWidth()) / (bandEditors.size() + 1);
-    for (auto* band : bandEditors)
-        band->setBounds (bandSpace.removeFromLeft (width));
+    for (auto* bandEditor : bandEditors)
+        bandEditor->setBounds (bandSpace.removeFromLeft (width));
 
     frame.setBounds (bandSpace.removeFromTop (bandSpace.getHeight() / 2.0));
     output.setBounds (frame.getBounds().reduced (8));
@@ -88,27 +102,13 @@ void FrequalizerAudioProcessorEditor::resized()
     plotFrame.reduce (3, 3);
     branding = bandSpace.reduced (5);
 
-    for (int i=0; i < bandEditors.size(); ++i) {
-        auto* band = bandEditors.getUnchecked (i);
-        band->frequencyResponse.clear();
-        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame.withX (plotFrame.getX() + 1));
-    }
-    frequencyResponse.clear();
-    processor.createFrequencyPlot (frequencyResponse, plotFrame);
+    updateFrequencyResponses();
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)
 {
     ignoreUnused (sender);
-    for (int i=0; i < bandEditors.size(); ++i) {
-        auto* band = bandEditors.getUnchecked (i);
-        band->updateControls (processor.getFilterType (i));
-        band->frequencyResponse.clear();
-        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame);
-        band->updateSoloState (processor.getBandSolo (i));
-    }
-    frequencyResponse.clear();
-    processor.createFrequencyPlot (frequencyResponse, plotFrame);
+    updateFrequencyResponses();
     repaint();
 }
 
@@ -140,6 +140,22 @@ void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
         auto pos = static_cast<double>(e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
         bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
     }
+}
+
+void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
+{
+    for (int i=0; i < bandEditors.size(); ++i) {
+        auto* bandEditor = bandEditors.getUnchecked (i);
+        bandEditor->updateSoloState (i);
+        if (auto* band = processor.getBand (i)) {
+            bandEditor->updateControls (band->type);
+            bandEditor->frequencyResponse.clear();
+            processor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1));
+        }
+        bandEditor->updateSoloState (processor.getBandSolo (i));
+    }
+    frequencyResponse.clear();
+    processor.createFrequencyPlot (frequencyResponse, processor.getMagnitudes(), plotFrame);
 }
 
 float FrequalizerAudioProcessorEditor::getPositionForFrequency (const float freq)
@@ -196,8 +212,6 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
     activate.setColour (TextButton::buttonOnColourId, Colours::green);
     buttonAttachments.add (new AudioProcessorValueTreeState::ButtonAttachment (processor.getPluginState(), processor.getActiveParamName (index), activate));
     addAndMakeVisible (activate);
-
-    updateControls (processor.getFilterType (index));
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::resized ()
@@ -224,7 +238,7 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
 {
     switch (type) {
         case FrequalizerAudioProcessor::LowPass:
-            frequency.setEnabled (true); quality.setEnabled (false); gain.setEnabled (false);
+            frequency.setEnabled (true); quality.setEnabled (true); gain.setEnabled (false);
             break;
         case FrequalizerAudioProcessor::LowPass1st:
             frequency.setEnabled (true); quality.setEnabled (false); gain.setEnabled (false);

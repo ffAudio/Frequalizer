@@ -69,10 +69,8 @@ public:
 
     int getNumBands () const;
 
-    FilterType getFilterType (const int index) const;
     String     getBandName   (const int index) const;
     Colour     getBandColour (const int index) const;
-    bool       getBandActive (const int index) const;
 
     void setBandSolo (const int index);
     bool getBandSolo (const int index) const;
@@ -83,8 +81,9 @@ public:
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
-    void createFrequencyPlot (Path& p, const Rectangle<int> bounds);
-    void createFrequencyPlot (Path& p, const int index, const Rectangle<int> bounds);
+    const std::vector<double>& getMagnitudes ();
+
+    void createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds);
 
     //==============================================================================
     const String getName() const override;
