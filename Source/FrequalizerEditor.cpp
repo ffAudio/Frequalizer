@@ -48,20 +48,22 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.setColour (Colours::silver);
     g.setFont (12.0f);
     g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
-    for (int i=0; i < 300; i += 30) {
-        auto x = plotFrame.getX() + plotFrame.getWidth() * i / 300.0;
-        if (i>0) g.drawVerticalLine (x, plotFrame.getY(), plotFrame.getBottom());
-        auto freq = 20.0 * std::pow (2.0, i / 30.0);
+    for (int i=0; i < 10; ++i) {
+        auto x = plotFrame.getX() + plotFrame.getWidth() * i * 0.1;
+        if (i > 0) g.drawVerticalLine (x, plotFrame.getY(), plotFrame.getBottom());
+        auto freq = getFrequencyForPosition (i * 0.1);
         g.drawFittedText ((freq < 1000) ? String (freq) + " Hz" : String (freq / 1000, 1) + " kHz",
                           x + 3, plotFrame.getBottom() - 18, 50, 15, Justification::left, 1);
     }
 
     for (int i=0; i < processor.getNumBands(); ++i) {
-        auto* band = bandEditors.getUnchecked (i);
-        g.setColour (processor.getBandActive (i) ?
-                     processor.getBandColour (i) :
-                     processor.getBandColour (i).withAlpha (0.3f));
-        g.strokePath (band->frequencyResponse, PathStrokeType (1.0));
+        auto* bandEditor = bandEditors.getUnchecked (i);
+        auto* band = processor.getBand (i);
+
+        g.setColour (band->active ? band->colour : band->colour.withAlpha (0.3f));
+        g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
+        g.setColour (draggingBand == i ? band->colour : band->colour.withAlpha (0.3f));
+        g.drawVerticalLine (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency(band->frequency), plotFrame.getY(), plotFrame.getBottom());
     }
     g.setColour (Colours::silver);
     g.strokePath (frequencyResponse, PathStrokeType (1.0));
@@ -108,6 +110,46 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
     frequencyResponse.clear();
     processor.createFrequencyPlot (frequencyResponse, plotFrame);
     repaint();
+}
+
+void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
+{
+    if (plotFrame.contains (e.position.getX(), e.position.getY())) {
+        for (int i=0; i < bandEditors.size(); ++i) {
+            if (auto* band = processor.getBand (i)) {
+                auto pos = plotFrame.getX() + getPositionForFrequency (band->frequency) * plotFrame.getWidth();
+                if (std::abs (pos - e.position.getX()) < 3) {
+                    setMouseCursor (MouseCursor (MouseCursor::LeftRightResizeCursor));
+                    if (i != draggingBand) {
+                        draggingBand = i;
+                        repaint (plotFrame);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+    draggingBand = -1;
+    setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
+    repaint (plotFrame);
+}
+
+void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
+{
+    if (isPositiveAndBelow (draggingBand, bandEditors.size())) {
+        auto pos = static_cast<double>(e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
+        bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
+    }
+}
+
+float FrequalizerAudioProcessorEditor::getPositionForFrequency (const float freq)
+{
+    return (std::log (freq / 20.0) / std::log (2.0)) / 10.0;
+}
+
+float FrequalizerAudioProcessorEditor::getFrequencyForPosition (const float pos)
+{
+    return 20.0 * std::pow (2.0, pos * 10.0);
 }
 
 
@@ -227,10 +269,14 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (const bool is
     solo.setToggleState (isSolo, dontSendNotification);
 }
 
+void FrequalizerAudioProcessorEditor::BandEditor::setFrequency (const float freq)
+{
+    frequency.setValue (freq, sendNotification);
+}
+
 void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)
 {
     if (b == &solo) {
         processor.setBandSolo (solo.getToggleState() ? index : -1);
     }
 }
-

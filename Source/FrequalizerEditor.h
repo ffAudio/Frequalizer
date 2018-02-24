@@ -28,6 +28,9 @@ public:
     void resized() override;
     void changeListenerCallback (ChangeBroadcaster* sender) override;
 
+    void mouseMove (const MouseEvent& e) override;
+    void mouseDrag (const MouseEvent& e) override;
+
     //==============================================================================
 
     class BandEditor : public Component,
@@ -41,6 +44,8 @@ public:
         void updateControls (FrequalizerAudioProcessor::FilterType type);
 
         void updateSoloState (const bool isSolo);
+
+        void setFrequency (const float frequency);
 
         void buttonClicked (Button* b) override;
 
@@ -61,8 +66,12 @@ public:
         OwnedArray<AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
     };
 
-
 private:
+
+    static float getPositionForFrequency (const float freq);
+
+    static float getFrequencyForPosition (const float pos);
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     FrequalizerAudioProcessor& processor;
@@ -77,6 +86,8 @@ private:
 
     GroupComponent          frame;
     TextFormattedSlider     output;
+
+    int                     draggingBand = -1;
 
     OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
 
