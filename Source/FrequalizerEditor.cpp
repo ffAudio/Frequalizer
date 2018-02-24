@@ -47,6 +47,17 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.setFont (15.0f);
 
     auto bounds = getLocalBounds();
+
+    g.setColour (Colours::silver);
+    g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
+    for (int i=0; i < 300; i += 30) {
+        auto x = plotFrame.getX() + plotFrame.getWidth() * i / 300.0;
+        if (i>0) g.drawVerticalLine (x, plotFrame.getY(), plotFrame.getBottom());
+        auto freq = 20.0 * std::pow (2.0, i / 30.0);
+        g.drawFittedText ((freq < 1000) ? String (freq) + " Hz" : String (freq / 1000, 1) + " kHz",
+                          x + 3, plotFrame.getBottom() - 18, 50, 15, Justification::left, 1);
+    }
+
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* band = bandEditors.getUnchecked (i);
         g.setColour (processor.getBandActive (i) ?
@@ -80,7 +91,7 @@ void FrequalizerAudioProcessorEditor::resized()
     for (int i=0; i < bandEditors.size(); ++i) {
         auto* band = bandEditors.getUnchecked (i);
         band->frequencyResponse.clear();
-        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame);
+        processor.createFrequencyPlot (band->frequencyResponse, i, plotFrame.withX (plotFrame.getX() + 1));
     }
     frequencyResponse.clear();
     processor.createFrequencyPlot (frequencyResponse, plotFrame);
