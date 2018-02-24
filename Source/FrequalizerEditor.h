@@ -16,6 +16,7 @@
 /**
 */
 class FrequalizerAudioProcessorEditor  : public AudioProcessorEditor,
+                                         public Button::Listener,
                                          public ChangeListener
 {
 public:
@@ -26,6 +27,7 @@ public:
 
     void paint (Graphics&) override;
     void resized() override;
+    void buttonClicked (Button* b) override;
     void changeListenerCallback (ChangeBroadcaster* sender) override;
 
     void mouseMove (const MouseEvent& e) override;
@@ -83,8 +85,8 @@ private:
     OwnedArray<BandEditor>  bandEditors;
 
     Rectangle<int>          plotFrame;
-    Rectangle<int>          branding;
     Path                    frequencyResponse;
+    ImageButton             brandingButton;
 
     GroupComponent          frame;
     TextFormattedSlider     output;
@@ -92,5 +94,6 @@ private:
     int                     draggingBand = -1;
 
     OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
+    SharedResourcePointer<TooltipWindow> tooltipWindow;
 
 };

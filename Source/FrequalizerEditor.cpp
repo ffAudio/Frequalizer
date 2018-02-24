@@ -16,6 +16,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
   : AudioProcessorEditor (&p), processor (p),
     output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
 {
+    tooltipWindow->setMillisecondsBeforeTipAppears (1000);
 
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.add (new BandEditor (i, processor));
@@ -27,6 +28,13 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     addAndMakeVisible (frame);
     addAndMakeVisible (output);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
+    output.setTooltip (TRANS ("Overall Gain"));
+
+    auto logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
+    brandingButton.setImages (false, true, true, logo, 1.0, Colours::transparentWhite, logo, 0.8, Colours::transparentWhite, logo, 0.8, Colours::grey.withAlpha (0.2f));
+    brandingButton.setTooltip (TRANS ("Go to the Foley's Finest Audio Website \"www.foleysfinest.com\""));
+    brandingButton.addListener (this);
+    addAndMakeVisible (brandingButton);
 
     setResizable (true, false);
     setSize (880, 500);
@@ -68,10 +76,6 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText ("-6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
 
-    Image logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
-    g.drawImageWithin (logo, branding.getX(), branding.getY(), branding.getWidth(), branding.getHeight(),
-                       RectanglePlacement (RectanglePlacement::fillDestination));
-
     g.reduceClipRegion (plotFrame);
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (i);
@@ -100,9 +104,15 @@ void FrequalizerAudioProcessorEditor::resized()
     output.setBounds (frame.getBounds().reduced (8));
 
     plotFrame.reduce (3, 3);
-    branding = bandSpace.reduced (5);
+    brandingButton.setBounds (bandSpace.reduced (5));
 
     updateFrequencyResponses();
+}
+
+void FrequalizerAudioProcessorEditor::buttonClicked (Button* b)
+{
+    if (b == &brandingButton)
+        URL ("https://foleysfinest.com").launchInDefaultBrowser();
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)
@@ -194,24 +204,29 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, Frequalize
     addAndMakeVisible (frequency);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getFrequencyParamName (index), frequency));
     frequency.setSkewFactorFromMidPoint (1000.0);
+    frequency.setTooltip (TRANS ("Filter's frequency"));
 
     addAndMakeVisible (quality);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getQualityParamName (index), quality));
     quality.setSkewFactorFromMidPoint (1.0);
+    quality.setTooltip (TRANS ("Filter's steepness (Quality)"));
 
     addAndMakeVisible (gain);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
     gain.setSkewFactorFromMidPoint (1.0);
+    gain.setTooltip (TRANS ("Filter's gain"));
 
     solo.setClickingTogglesState (true);
     solo.addListener (this);
     solo.setColour (TextButton::buttonOnColourId, Colours::yellow);
     addAndMakeVisible (solo);
+    solo.setTooltip (TRANS ("Listen only through this filter (solo)"));
 
     activate.setClickingTogglesState (true);
     activate.setColour (TextButton::buttonOnColourId, Colours::green);
     buttonAttachments.add (new AudioProcessorValueTreeState::ButtonAttachment (processor.getPluginState(), processor.getActiveParamName (index), activate));
     addAndMakeVisible (activate);
+    activate.setTooltip (TRANS ("Activate or deactivate this filter"));
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::resized ()
