@@ -43,12 +43,10 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
 
-    g.setColour (Colours::white);
-    g.setFont (15.0f);
-
     auto bounds = getLocalBounds();
 
     g.setColour (Colours::silver);
+    g.setFont (12.0f);
     g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
     for (int i=0; i < 300; i += 30) {
         auto x = plotFrame.getX() + plotFrame.getWidth() * i / 300.0;
