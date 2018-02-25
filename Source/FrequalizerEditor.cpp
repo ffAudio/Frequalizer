@@ -58,19 +58,24 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
     auto bounds = getLocalBounds();
 
-    g.setColour (Colours::silver);
     g.setFont (12.0f);
     g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
     for (int i=0; i < 10; ++i) {
+        g.setColour (Colours::silver.withAlpha (0.3f));
         auto x = plotFrame.getX() + plotFrame.getWidth() * i * 0.1;
         if (i > 0) g.drawVerticalLine (x, plotFrame.getY(), plotFrame.getBottom());
+
+        g.setColour (Colours::silver);
         auto freq = getFrequencyForPosition (i * 0.1);
         g.drawFittedText ((freq < 1000) ? String (freq) + " Hz" : String (freq / 1000, 1) + " kHz",
                           x + 3, plotFrame.getBottom() - 18, 50, 15, Justification::left, 1);
     }
 
+    g.setColour (Colours::silver.withAlpha (0.3f));
     g.drawHorizontalLine (plotFrame.getY() + 0.25 * plotFrame.getHeight(), plotFrame.getX(), plotFrame.getRight());
     g.drawHorizontalLine (plotFrame.getY() + 0.75 * plotFrame.getHeight(), plotFrame.getX(), plotFrame.getRight());
+
+    g.setColour (Colours::silver);
     g.drawFittedText ("+12 dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
     g.drawFittedText ("+6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);

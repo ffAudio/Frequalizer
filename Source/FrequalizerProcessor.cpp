@@ -53,7 +53,7 @@ state (*this, &undo)
         band.name       = "Lowest";
         band.colour     = Colours::blue;
         band.frequency  = 20.0;
-        band.quality    = 0.5;
+        band.quality    = 0.707;
         band.type       = HighPass;
     }
     {
@@ -89,7 +89,7 @@ state (*this, &undo)
         band.name       = "Highest";
         band.colour     = Colours::red;
         band.frequency  = 12000.0;
-        band.quality    = 0.5;
+        band.quality    = 0.707;
         band.type       = LowPass;
     }
 
