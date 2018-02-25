@@ -19,8 +19,14 @@
       <FILE id="JWCkWt" name="FrequalizerEditor.h" compile="0" resource="0"
             file="Source/FrequalizerEditor.h"/>
       <FILE id="c3BVBd" name="LabeledSlider.h" compile="0" resource="0" file="Source/LabeledSlider.h"/>
+      <FILE id="IXCqaS" name="SocialButtons.h" compile="0" resource="0" file="Source/SocialButtons.h"/>
     </GROUP>
-    <FILE id="uH1wMg" name="Logo-FF.png" compile="0" resource="1" file="Resources/Logo-FF.png"/>
+    <GROUP id="{EF796692-87A3-0277-8502-8CC33FE3BE62}" name="Resources">
+      <FILE id="uH1wMg" name="Logo-FF.png" compile="0" resource="1" file="Resources/Logo-FF.png"/>
+      <FILE id="wsX6qO" name="FB-logo.png" compile="0" resource="1" file="Resources/FB-logo.png"/>
+      <FILE id="AGfmdK" name="GitHub-logo.png" compile="0" resource="1" file="Resources/GitHub-logo.png"/>
+      <FILE id="YTXo6b" name="FF-text.png" compile="0" resource="1" file="Resources/FF-text.png"/>
+    </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="uH1wMg" bigIcon="uH1wMg">

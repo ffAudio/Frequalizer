@@ -5,6 +5,9 @@
     <Filter Include="Frequalizer\Source">
       <UniqueIdentifier>{ABB52935-F875-7F24-626E-307845677FC7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Frequalizer\Resources">
+      <UniqueIdentifier>{3330D4E1-8287-BDE3-614C-E17B148EDEA9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Frequalizer">
       <UniqueIdentifier>{028F932E-6D29-FC7F-4071-3FA8D6B39ADA}</UniqueIdentifier>
     </Filter>
@@ -738,6 +741,9 @@
     </ClCompile>
     <ClCompile Include="C:\JUCE\modules\juce_audio_processors\format_types\juce_VSTPluginFormat.cpp">
       <Filter>JUCE Modules\juce_audio_processors\format_types</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\JUCE\modules\juce_audio_processors\processors\juce_AudioPluginInstance.cpp">
+      <Filter>JUCE Modules\juce_audio_processors\processors</Filter>
     </ClCompile>
     <ClCompile Include="C:\JUCE\modules\juce_audio_processors\processors\juce_AudioProcessor.cpp">
       <Filter>JUCE Modules\juce_audio_processors\processors</Filter>
@@ -2170,6 +2176,9 @@
       <Filter>Frequalizer\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\LabeledSlider.h">
+      <Filter>Frequalizer\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\SocialButtons.h">
       <Filter>Frequalizer\Source</Filter>
     </ClInclude>
     <ClInclude Include="C:\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">
@@ -4167,7 +4176,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Resources\Logo-FF.png">
-      <Filter>Frequalizer</Filter>
+      <Filter>Frequalizer\Resources</Filter>
+    </None>
+    <None Include="..\..\Resources\FB-logo.png">
+      <Filter>Frequalizer\Resources</Filter>
+    </None>
+    <None Include="..\..\Resources\GitHub-logo.png">
+      <Filter>Frequalizer\Resources</Filter>
+    </None>
+    <None Include="..\..\Resources\FF-text.png">
+      <Filter>Frequalizer\Resources</Filter>
     </None>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\flac\Flac Licence.txt">
       <Filter>JUCE Modules\juce_audio_formats\codecs\flac</Filter>

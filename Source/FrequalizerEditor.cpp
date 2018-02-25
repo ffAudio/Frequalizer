@@ -8,6 +8,7 @@
 
 #include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
+#include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
 
@@ -17,6 +18,8 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
 {
     tooltipWindow->setMillisecondsBeforeTipAppears (1000);
+
+    addAndMakeVisible (socialButtons);
 
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.add (new BandEditor (i, processor));
@@ -30,14 +33,8 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
     output.setTooltip (TRANS ("Overall Gain"));
 
-    auto logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
-    brandingButton.setImages (false, true, true, logo, 1.0, Colours::transparentWhite, logo, 0.8, Colours::transparentWhite, logo, 0.8, Colours::grey.withAlpha (0.2f));
-    brandingButton.setTooltip (TRANS ("Go to the Foley's Finest Audio Website \"www.foleysfinest.com\""));
-    brandingButton.addListener (this);
-    addAndMakeVisible (brandingButton);
-
     setResizable (true, false);
-    setSize (880, 500);
+    setSize (900, 500);
 
     updateFrequencyResponses();
 
@@ -58,7 +55,11 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
     auto bounds = getLocalBounds();
 
+    auto logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
+    g.drawImage (logo, brandingFrame.toFloat(), RectanglePlacement (RectanglePlacement::fillDestination));
+
     g.setFont (12.0f);
+    g.setColour (Colours::silver);
     g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
     for (int i=0; i < 10; ++i) {
         g.setColour (Colours::silver.withAlpha (0.3f));
@@ -93,12 +94,13 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     }
     g.setColour (Colours::silver);
     g.strokePath (frequencyResponse, PathStrokeType (1.0));
-
 }
 
 void FrequalizerAudioProcessorEditor::resized()
 {
     plotFrame = getLocalBounds().reduced (3, 3);
+
+    socialButtons.setBounds (plotFrame.removeFromBottom (35));
 
     auto bandSpace = plotFrame.removeFromBottom (getHeight() / 2);
     float width = static_cast<float> (bandSpace.getWidth()) / (bandEditors.size() + 1);
@@ -109,15 +111,9 @@ void FrequalizerAudioProcessorEditor::resized()
     output.setBounds (frame.getBounds().reduced (8));
 
     plotFrame.reduce (3, 3);
-    brandingButton.setBounds (bandSpace.reduced (5));
+    brandingFrame = bandSpace.reduced (5);
 
     updateFrequencyResponses();
-}
-
-void FrequalizerAudioProcessorEditor::buttonClicked (Button* b)
-{
-    if (b == &brandingButton)
-        URL ("https://foleysfinest.com").launchInDefaultBrowser();
 }
 
 void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)

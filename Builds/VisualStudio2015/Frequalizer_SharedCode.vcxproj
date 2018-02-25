@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{12E7A58C-FA4D-AB0A-5C30-A90E071352BE}</ProjectGuid>
+    <ProjectGuid>{7F041B0E-3D62-9393-3860-2EAA9CF5E5F0}</ProjectGuid>
     <PlatformToolset>v140</PlatformToolset>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -496,6 +496,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="C:\JUCE\modules\juce_audio_processors\format_types\juce_VSTPluginFormat.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="C:\JUCE\modules\juce_audio_processors\processors\juce_AudioPluginInstance.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="C:\JUCE\modules\juce_audio_processors\processors\juce_AudioProcessor.cpp">
@@ -1804,6 +1807,7 @@
     <ClInclude Include="..\..\Source\FrequalizerProcessor.h"/>
     <ClInclude Include="..\..\Source\FrequalizerEditor.h"/>
     <ClInclude Include="..\..\Source\LabeledSlider.h"/>
+    <ClInclude Include="..\..\Source\SocialButtons.h"/>
     <ClInclude Include="C:\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h"/>
     <ClInclude Include="C:\JUCE\modules\juce_audio_basics\buffers\juce_AudioChannelSet.h"/>
     <ClInclude Include="C:\JUCE\modules\juce_audio_basics\buffers\juce_AudioDataConverters.h"/>
@@ -2471,6 +2475,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Resources\Logo-FF.png"/>
+    <None Include="..\..\Resources\FB-logo.png"/>
+    <None Include="..\..\Resources\GitHub-logo.png"/>
+    <None Include="..\..\Resources\FF-text.png"/>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\flac\Flac Licence.txt"/>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\oggvorbis\Ogg Vorbis Licence.txt"/>
     <None Include="C:\JUCE\modules\juce_graphics\image_formats\jpglib\changes to libjpeg for JUCE.txt"/>

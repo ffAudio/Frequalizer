@@ -8,6 +8,7 @@
 
 #include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
+#include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
 
