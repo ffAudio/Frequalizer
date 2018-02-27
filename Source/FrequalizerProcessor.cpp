@@ -102,7 +102,7 @@ state (*this, &undo)
         state.createAndAddParameter (getTypeParamName (i), band.name + " Type", TRANS ("Filter Type"),
                                      NormalisableRange<float> (0, LastFilterID, 1),
                                      band.type,
-                                     [](float value) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(value)); },
+                                     [](float value) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(static_cast<int> (value))); },
                                      [](String text) {
                                          for (int i=0; i < LastFilterID; ++i)
                                              if (text == FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(i)))
@@ -305,7 +305,7 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
     for (int i=0; i < bands.size(); ++i) {
         if (parameter.startsWith (getBandName (i) + "-")) {
             if (parameter.endsWith (paramType)) {
-                bands [i].type = static_cast<FilterType> (newValue);
+                bands [i].type = static_cast<FilterType> (static_cast<int> (newValue));
             }
             else if (parameter.endsWith (paramFrequency)) {
                 bands [i].frequency = newValue;
