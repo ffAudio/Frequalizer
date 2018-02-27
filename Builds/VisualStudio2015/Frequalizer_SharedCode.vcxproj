@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7F041B0E-3D62-9393-3860-2EAA9CF5E5F0}</ProjectGuid>
+    <ProjectGuid>{17A7E70B-F5B0-22AE-2648-6710464512E6}</ProjectGuid>
     <PlatformToolset>v140</PlatformToolset>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -2477,6 +2477,7 @@
     <None Include="..\..\Resources\Logo-FF.png"/>
     <None Include="..\..\Resources\FB-logo.png"/>
     <None Include="..\..\Resources\GitHub-logo.png"/>
+    <None Include="..\..\Resources\In-logo.png"/>
     <None Include="..\..\Resources\FF-text.png"/>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\flac\Flac Licence.txt"/>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\oggvorbis\Ogg Vorbis Licence.txt"/>

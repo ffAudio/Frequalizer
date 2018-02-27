@@ -17,6 +17,9 @@ namespace FFAudioData
     extern const char*   GitHublogo_png;
     const int            GitHublogo_pngSize = 4268;
 
+    extern const char*   Inlogo_png;
+    const int            Inlogo_pngSize = 2295;
+
     extern const char*   FFtext_png;
     const int            FFtext_pngSize = 36300;
 
@@ -24,7 +27,7 @@ namespace FFAudioData
     extern const char* namedResourceList[];
 
     // Number of elements in the namedResourceList array.
-    const int namedResourceListSize = 4;
+    const int namedResourceListSize = 5;
 
     // If you provide the name of one of the binary resource variables above, this function will
     // return the corresponding data and its size (or a null pointer if the name isn't found).
