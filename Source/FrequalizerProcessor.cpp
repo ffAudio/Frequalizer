@@ -123,12 +123,13 @@ state (*this, &undo)
         state.createAndAddParameter (getQualityParamName (i), band.name + " Q", TRANS ("Quality"),
                                      NormalisableRange<float> (0.1, 10.0, 0.1),
                                      band.quality,
-                                     nullptr, nullptr,
+                                     [](float value) { return String (value, 1); },
+                                     [](const String& text) { return text.getFloatValue(); },
                                      false, true, false);
         state.createAndAddParameter (getGainParamName (i), band.name + " gain", TRANS ("Gain"),
                                      NormalisableRange<float> (0.25f, 4.0f, 0.001f),
                                      band.gain,
-                                     [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
+                                     [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
                                      [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
                                      false, true, false);
         state.createAndAddParameter (getActiveParamName (i), band.name + " active", TRANS ("Active"),
