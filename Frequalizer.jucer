@@ -18,7 +18,6 @@
             file="Source/FrequalizerEditor.cpp"/>
       <FILE id="JWCkWt" name="FrequalizerEditor.h" compile="0" resource="0"
             file="Source/FrequalizerEditor.h"/>
-      <FILE id="c3BVBd" name="LabeledSlider.h" compile="0" resource="0" file="Source/LabeledSlider.h"/>
       <FILE id="IXCqaS" name="SocialButtons.h" compile="0" resource="0" file="Source/SocialButtons.h"/>
     </GROUP>
     <GROUP id="{EF796692-87A3-0277-8502-8CC33FE3BE62}" name="Resources">
