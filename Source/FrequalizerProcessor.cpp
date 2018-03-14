@@ -6,7 +6,6 @@
   ==============================================================================
 */
 
-#include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
@@ -35,7 +34,7 @@ state (*this, &undo)
 {
     state.createAndAddParameter (paramOutput, TRANS ("Output"), TRANS ("Output level"),
                                  NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
-                                 [](float value) {return String (Decibels::gainToDecibels(value)) + " dB";},
+                                 [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
                                  [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
                                  false, true, false);
 

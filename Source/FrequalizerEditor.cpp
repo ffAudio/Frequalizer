@@ -6,7 +6,6 @@
   ==============================================================================
 */
 
-#include "LabeledSlider.h"
 #include "FrequalizerProcessor.h"
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
@@ -15,7 +14,7 @@
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
   : AudioProcessorEditor (&p), processor (p),
-    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB)
+    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
 {
     tooltipWindow->setMillisecondsBeforeTipAppears (1000);
 
@@ -184,9 +183,9 @@ float FrequalizerAudioProcessorEditor::getFrequencyForPosition (const float pos)
 FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, FrequalizerAudioProcessor& p)
   : index (i),
     processor (p),
-    frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::Hertz),
-    quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::RawNumber),
-    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow, TextFormattedSlider::GainDB),
+    frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
+    quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
+    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
     solo      (TRANS ("S")),
     activate  (TRANS ("A"))
 {

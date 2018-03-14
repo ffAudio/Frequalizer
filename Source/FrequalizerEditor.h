@@ -58,9 +58,9 @@ public:
 
         GroupComponent      frame;
         ComboBox            filterType;
-        TextFormattedSlider frequency;
-        TextFormattedSlider quality;
-        TextFormattedSlider gain;
+        Slider              frequency;
+        Slider              quality;
+        Slider              gain;
         TextButton          solo;
         TextButton          activate;
         OwnedArray<AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
@@ -90,7 +90,7 @@ private:
     Path                    frequencyResponse;
 
     GroupComponent          frame;
-    TextFormattedSlider     output;
+    Slider                  output;
 
     SocialButtons           socialButtons;
 
