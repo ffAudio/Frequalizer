@@ -32,7 +32,8 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
     output.setTooltip (TRANS ("Overall Gain"));
 
-    setResizable (true, false);
+    setResizable (true, true);
+    setResizeLimits (800, 450, 2990, 1800);
     setSize (900, 500);
 
     updateFrequencyResponses();
