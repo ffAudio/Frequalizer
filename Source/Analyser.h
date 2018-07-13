@@ -21,7 +21,8 @@ class Analyser : public Thread
 public:
     Analyser() : Thread ("Frequaliser-Analyser"),
                  abstractFifo (48000),
-                 fft (12)
+                 fft (12),
+                 windowing (fft.getSize(), dsp::WindowingFunction<Type>::kaiser)
     {
     }
 
@@ -72,7 +73,7 @@ public:
                 if (block2 > 0) fftBuffer.copyFrom (0, block1, audioFifo.getReadPointer (0, start2), block2);
                 abstractFifo.finishedRead (block1 + block2);
 
-                // TODO: windowing
+                windowing.multiplyWithWindowingTable (fftBuffer.getWritePointer (0), fft.getSize());
                 fft.performFrequencyOnlyForwardTransform (fftBuffer.getWritePointer (0));
 
                 ScopedLock lockedForWriting (pathCreationLock);
@@ -105,7 +106,7 @@ private:
     inline float indexToX (float index, float minFreq) const
     {
         const auto freq = (sampleRate * index) / fft.getSize();
-        return (freq > 0.01f) ? log (freq / minFreq) / log (2.0f) : 0.0f;
+        return (freq > 0.01f) ? std::log (freq / minFreq) / std::log (2.0f) : 0.0f;
     }
 
     inline float binToY (float bin, const Rectangle<float> bounds) const
@@ -127,6 +128,7 @@ private:
     CriticalSection pathCreationLock;
 
     dsp::FFT fft;
+    dsp::WindowingFunction<Type> windowing;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Analyser)
 };
