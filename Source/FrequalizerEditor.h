@@ -16,7 +16,8 @@
 /**
 */
 class FrequalizerAudioProcessorEditor  : public AudioProcessorEditor,
-                                         public ChangeListener
+                                         public ChangeListener,
+                                         public Timer
 {
 public:
     FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor&);
@@ -27,6 +28,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
     void changeListenerCallback (ChangeBroadcaster* sender) override;
+    void timerCallback() override;
 
     void mouseMove (const MouseEvent& e) override;
     void mouseDrag (const MouseEvent& e) override;
@@ -52,7 +54,7 @@ public:
         Path frequencyResponse;
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BandEditor)
-        
+
         int index;
         FrequalizerAudioProcessor& processor;
 
@@ -81,6 +83,10 @@ private:
     FrequalizerAudioProcessor& processor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FrequalizerAudioProcessorEditor)
+
+#ifdef JUCE_OPENGL
+    OpenGLContext           openGLContext;
+#endif
 
     OwnedArray<BandEditor>  bandEditors;
 

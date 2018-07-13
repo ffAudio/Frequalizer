@@ -6,6 +6,7 @@
   ==============================================================================
 */
 
+#include "Analyser.h"
 #include "FrequalizerProcessor.h"
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
@@ -38,12 +39,21 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
 
     updateFrequencyResponses();
 
+#ifdef JUCE_OPENGL
+    openGLContext.attachTo (*getTopLevelComponent());
+#endif
+
     processor.addChangeListener (this);
+
+    startTimerHz (30);
 }
 
 FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 {
     processor.removeChangeListener (this);
+#ifdef JUCE_OPENGL
+    openGLContext.detach();
+#endif
 }
 
 //==============================================================================
@@ -52,8 +62,6 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     Graphics::ScopedSaveState state (g);
 
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
-    auto bounds = getLocalBounds();
 
     auto logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
     g.drawImage (logo, brandingFrame.toFloat(), RectanglePlacement (RectanglePlacement::fillDestination));
@@ -81,6 +89,14 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.drawFittedText ("+6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText ("-6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+
+    Path analyser;
+    processor.createAnalyserPlot (analyser, plotFrame, 20.0f, true);
+    g.setColour (Colours::papayawhip);
+    g.strokePath (analyser, PathStrokeType (1.0));
+    processor.createAnalyserPlot (analyser, plotFrame, 20.0f, false);
+    g.setColour (Colours::olivedrab);
+    g.strokePath (analyser, PathStrokeType (1.0));
 
     g.reduceClipRegion (plotFrame);
     for (int i=0; i < processor.getNumBands(); ++i) {
@@ -121,6 +137,11 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
     ignoreUnused (sender);
     updateFrequencyResponses();
     repaint();
+}
+
+void FrequalizerAudioProcessorEditor::timerCallback()
+{
+    repaint (plotFrame);
 }
 
 void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)

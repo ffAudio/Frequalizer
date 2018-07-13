@@ -6,6 +6,7 @@
   ==============================================================================
 */
 
+#include "Analyser.h"
 #include "FrequalizerProcessor.h"
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
@@ -152,6 +153,8 @@ state (*this, &undo)
 
 FrequalizerAudioProcessor::~FrequalizerAudioProcessor()
 {
+    inputAnalyser.stopThread (1000);
+    outputAnalyser.stopThread (1000);
 }
 
 //==============================================================================
@@ -231,10 +234,14 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
 
     filter.prepare (spec);
 
+    inputAnalyser.setupAnalyser (sampleRate, sampleRate);
+    outputAnalyser.setupAnalyser (sampleRate, sampleRate);
 }
 
 void FrequalizerAudioProcessor::releaseResources()
 {
+    inputAnalyser.stopThread (1000);
+    outputAnalyser.stopThread (1000);
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -253,6 +260,8 @@ void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     ScopedNoDenormals noDenormals;
     ignoreUnused (midiMessages);
 
+    inputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
+
     if (wasBypassed) {
         filter.reset();
         wasBypassed = false;
@@ -261,6 +270,7 @@ void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     dsp::ProcessContextReplacing<float> context  (ioBuffer);
     filter.process (context);
 
+    outputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
 }
 
 AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
@@ -516,6 +526,14 @@ void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<
     for (int i=1; i < frequencies.size(); ++i) {
         p.lineTo (bounds.getX() + i * xFactor, bounds.getCentreY() - yFactor * std::log (mags [i]) / std::log (2));
     }
+}
+
+void FrequalizerAudioProcessor::createAnalyserPlot (Path& p, const Rectangle<int> bounds, float minFreq, bool input)
+{
+    if (input)
+        inputAnalyser.createPath (p, bounds.toFloat(), minFreq);
+    else
+        outputAnalyser.createPath (p, bounds.toFloat(), minFreq);
 }
 
 //==============================================================================

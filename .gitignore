@@ -1,10 +1,6 @@
-Builds/MacOSX/build
-Builds/MacOSX/*.xcodeproj/project.xcworkspace
-**/xcworkspace
-**/xcuserdata
+**/.DS_Store
+Builds
+JuceLibraryCode
+!JuceLibraryCode/AppData.h
+!JuceLibraryCode/BinaryData.*
 
-Builds/VisualStudio2015/.vs
-Builds/VisualStudio2015/Debug
-Builds/VisualStudio2015/Release
-Builds/VisualStudio2015/*.opensdf
-Builds/VisualStudio2015/*.sdf
