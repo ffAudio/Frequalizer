@@ -54,7 +54,7 @@ public:
         audioFifo.setSize (1, audioFifoSize);
         abstractFifo.setTotalSize (audioFifoSize);
         fftBuffer.setSize (1, fft.getSize() * 2);
-        averager.setSize (9, fft.getSize() / 2, false, true);
+        averager.setSize (5, fft.getSize() / 2, false, true);
 
         startThread (5);
     }

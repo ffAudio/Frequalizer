@@ -11,7 +11,6 @@
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
-
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
   : AudioProcessorEditor (&p), processor (p),
@@ -59,6 +58,9 @@ FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 //==============================================================================
 void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 {
+    const Colour inputColour = Colours::greenyellow;
+    const Colour outputColour = Colours::indianred;
+
     Graphics::ScopedSaveState state (g);
 
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
@@ -90,15 +92,19 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText ("-6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
 
+    g.reduceClipRegion (plotFrame);
+
     Path analyser;
+    g.setFont (16.0f);
     processor.createAnalyserPlot (analyser, plotFrame, 20.0f, true);
-    g.setColour (Colours::papayawhip);
+    g.setColour (inputColour);
+    g.drawFittedText ("Input", plotFrame.reduced (8), Justification::topRight, 1);
     g.strokePath (analyser, PathStrokeType (1.0));
     processor.createAnalyserPlot (analyser, plotFrame, 20.0f, false);
-    g.setColour (Colours::olivedrab);
+    g.setColour (outputColour);
+    g.drawFittedText ("Output", plotFrame.reduced (8, 28), Justification::topRight, 1);
     g.strokePath (analyser, PathStrokeType (1.0));
 
-    g.reduceClipRegion (plotFrame);
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (i);
         auto* band = processor.getBand (i);
