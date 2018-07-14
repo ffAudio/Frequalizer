@@ -1,6 +1,12 @@
 # Frequalizer
 
-This is a JUCE project using the new dsp module for an Equalizer. It will be the basis for additional features (sorry, those won't be open source), like M/S operation, an Analyser graph and maybe more...
+This is a JUCE project using the new dsp module for an Equalizer.
+It features:
+
+- six individual bands
+- an input and an output analyser
+- solo each band
+- drag frequency and gain directly in the graph
 
 ![Frequalizer Screenshot](https://raw.githubusercontent.com/ffAudio/Frequalizer/master/Resources/Screenshot.png)
 
