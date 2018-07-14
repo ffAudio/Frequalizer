@@ -51,6 +51,8 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
 
 FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 {
+    PopupMenu::dismissAllActiveMenus();
+
     processor.removeChangeListener (this);
 #ifdef JUCE_OPENGL
     openGLContext.detach();
@@ -150,6 +152,34 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
 void FrequalizerAudioProcessorEditor::timerCallback()
 {
     repaint (plotFrame);
+}
+
+void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
+{
+    if (e.mods.isPopupMenu() && plotFrame.contains (e.position.getX(), e.position.getY()))
+        for (int i=0; i < bandEditors.size(); ++i)
+            if (auto* band = processor.getBand (i))
+            {
+                if (std::abs (plotFrame.getX() + getPositionForFrequency (band->frequency) * plotFrame.getWidth()
+                              - e.position.getX()) < clickRadius)
+                {
+                    contextMenu.clear();
+                    for (int t=0; t < FrequalizerAudioProcessor::LastFilterID; ++t)
+                        contextMenu.addItem (t + 1,
+                                             FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType> (t)),
+                                             true,
+                                             band->type == t);
+
+                    contextMenu.showMenuAsync (PopupMenu::Options()
+                                               .withTargetComponent (this)
+                                               .withTargetScreenArea ({e.getScreenX(), e.getScreenY(), 1, 1})
+                                               , [this, i](int selected)
+                    {
+                        if (selected > 0)
+                            bandEditors.getUnchecked (i)->setType (selected - 1);
+                    });
+                }
+            }
 }
 
 void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
@@ -364,19 +394,24 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
     }
 }
 
-void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (const bool isSolo)
+void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (bool isSolo)
 {
     solo.setToggleState (isSolo, dontSendNotification);
 }
 
-void FrequalizerAudioProcessorEditor::BandEditor::setFrequency (const float freq)
+void FrequalizerAudioProcessorEditor::BandEditor::setFrequency (float freq)
 {
     frequency.setValue (freq, sendNotification);
 }
 
-void FrequalizerAudioProcessorEditor::BandEditor::setGain (const float gainToUse)
+void FrequalizerAudioProcessorEditor::BandEditor::setGain (float gainToUse)
 {
     gain.setValue (gainToUse, sendNotification);
+}
+
+void FrequalizerAudioProcessorEditor::BandEditor::setType (int type)
+{
+    filterType.setSelectedId (type + 1, sendNotification);
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)

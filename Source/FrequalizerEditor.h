@@ -30,6 +30,8 @@ public:
     void changeListenerCallback (ChangeBroadcaster* sender) override;
     void timerCallback() override;
 
+    void mouseDown (const MouseEvent& e) override;
+
     void mouseMove (const MouseEvent& e) override;
     void mouseDrag (const MouseEvent& e) override;
 
@@ -47,11 +49,13 @@ public:
 
         void updateControls (FrequalizerAudioProcessor::FilterType type);
 
-        void updateSoloState (const bool isSolo);
+        void updateSoloState (bool isSolo);
 
-        void setFrequency (const float frequency);
+        void setFrequency (float frequency);
 
-        void setGain (const float gain);
+        void setGain (float gain);
+
+        void setType (int type);
 
         void buttonClicked (Button* b) override;
 
@@ -114,4 +118,5 @@ private:
     OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
     SharedResourcePointer<TooltipWindow> tooltipWindow;
 
+    PopupMenu               contextMenu;
 };
