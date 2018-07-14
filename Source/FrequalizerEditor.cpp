@@ -180,6 +180,25 @@ void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
     }
 }
 
+void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
+{
+    if (plotFrame.contains (e.position.getX(), e.position.getY()))
+    {
+        for (int i=0; i < bandEditors.size(); ++i)
+        {
+            if (auto* band = processor.getBand (i))
+            {
+                if (std::abs (plotFrame.getX() + getPositionForFrequency (band->frequency) * plotFrame.getWidth()
+                              - e.position.getX()) < 3)
+                {
+                    if (auto* param = processor.getPluginState().getParameter (processor.getActiveParamName (i)))
+                        param->setValueNotifyingHost (param->getValue() < 0.5f ? 1.0f : 0.0f);
+                }
+            }
+        }
+    }
+}
+
 void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
 {
     for (int i=0; i < bandEditors.size(); ++i) {
