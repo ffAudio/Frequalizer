@@ -11,7 +11,7 @@
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
-static int clickRadius = 3;
+static int clickRadius = 4;
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
@@ -116,7 +116,11 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
         g.setColour (band->active ? band->colour : band->colour.withAlpha (0.3f));
         g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
         g.setColour (draggingBand == i ? band->colour : band->colour.withAlpha (0.3f));
-        g.drawVerticalLine (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency(band->frequency), plotFrame.getY(), plotFrame.getBottom());
+        auto x = plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency(band->frequency);
+        auto y = getPositionForGain (band->gain, plotFrame.getY(), plotFrame.getBottom());
+        g.drawVerticalLine (x, plotFrame.getY(), y - 5);
+        g.drawVerticalLine (x, y + 5, plotFrame.getBottom());
+        g.fillEllipse (x - 3, y - 3, 6, 6);
     }
     g.setColour (Colours::silver);
     g.strokePath (frequencyResponse, PathStrokeType (1.0));
