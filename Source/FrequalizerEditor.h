@@ -51,6 +51,8 @@ public:
 
         void setFrequency (const float frequency);
 
+        void setGain (const float gain);
+
         void buttonClicked (Button* b) override;
 
         Path frequencyResponse;
@@ -76,9 +78,13 @@ private:
 
     void updateFrequencyResponses ();
 
-    static float getPositionForFrequency (const float freq);
+    static float getPositionForFrequency (float freq);
 
-    static float getFrequencyForPosition (const float pos);
+    static float getFrequencyForPosition (float pos);
+
+    static float getPositionForGain (float gain, float top, float bottom);
+
+    static float getGainForPosition (float pos, float top, float bottom);
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -103,6 +109,7 @@ private:
     SocialButtons           socialButtons;
 
     int                     draggingBand = -1;
+    bool                    draggingGain = false;
 
     OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
     SharedResourcePointer<TooltipWindow> tooltipWindow;

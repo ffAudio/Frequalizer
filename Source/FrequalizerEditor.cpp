@@ -11,6 +11,8 @@
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
+static int clickRadius = 3;
+
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
   : AudioProcessorEditor (&p), processor (p),
@@ -156,8 +158,17 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
         for (int i=0; i < bandEditors.size(); ++i) {
             if (auto* band = processor.getBand (i)) {
                 auto pos = plotFrame.getX() + getPositionForFrequency (band->frequency) * plotFrame.getWidth();
-                if (std::abs (pos - e.position.getX()) < 3) {
-                    setMouseCursor (MouseCursor (MouseCursor::LeftRightResizeCursor));
+                if (std::abs (pos - e.position.getX()) < clickRadius) {
+                    if (std::abs (getPositionForGain (band->gain, plotFrame.getY(), plotFrame.getBottom())
+                                  - e.position.getY()) < clickRadius)
+                    {
+                        draggingGain = processor.getPluginState().getParameter (processor.getGainParamName (i));
+                        setMouseCursor (MouseCursor (MouseCursor::UpDownLeftRightResizeCursor));
+                    }
+                    else
+                    {
+                        setMouseCursor (MouseCursor (MouseCursor::LeftRightResizeCursor));
+                    }
                     if (i != draggingBand) {
                         draggingBand = i;
                         repaint (plotFrame);
@@ -168,6 +179,7 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
         }
     }
     draggingBand = -1;
+    draggingGain = false;
     setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
     repaint (plotFrame);
 }
@@ -177,6 +189,8 @@ void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
     if (isPositiveAndBelow (draggingBand, bandEditors.size())) {
         auto pos = static_cast<double>(e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
         bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
+        if (draggingGain)
+            bandEditors [draggingBand]->setGain (getGainForPosition (e.position.getY(), plotFrame.getY(), plotFrame.getBottom()));
     }
 }
 
@@ -189,7 +203,7 @@ void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
             if (auto* band = processor.getBand (i))
             {
                 if (std::abs (plotFrame.getX() + getPositionForFrequency (band->frequency) * plotFrame.getWidth()
-                              - e.position.getX()) < 3)
+                              - e.position.getX()) < clickRadius)
                 {
                     if (auto* param = processor.getPluginState().getParameter (processor.getActiveParamName (i)))
                         param->setValueNotifyingHost (param->getValue() < 0.5f ? 1.0f : 0.0f);
@@ -215,14 +229,24 @@ void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
     processor.createFrequencyPlot (frequencyResponse, processor.getMagnitudes(), plotFrame);
 }
 
-float FrequalizerAudioProcessorEditor::getPositionForFrequency (const float freq)
+float FrequalizerAudioProcessorEditor::getPositionForFrequency (float freq)
 {
     return (std::log (freq / 20.0) / std::log (2.0)) / 10.0;
 }
 
-float FrequalizerAudioProcessorEditor::getFrequencyForPosition (const float pos)
+float FrequalizerAudioProcessorEditor::getFrequencyForPosition (float pos)
 {
     return 20.0 * std::pow (2.0, pos * 10.0);
+}
+
+float FrequalizerAudioProcessorEditor::getPositionForGain (float gain, float top, float bottom)
+{
+    return jmap (Decibels::gainToDecibels (gain, -12.0f), -12.0f, 12.0f, bottom, top);
+}
+
+float FrequalizerAudioProcessorEditor::getGainForPosition (float pos, float top, float bottom)
+{
+    return Decibels::decibelsToGain (jmap (pos, bottom, top, -12.0f, 12.0f), -12.0f);
 }
 
 
@@ -348,6 +372,11 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (const bool is
 void FrequalizerAudioProcessorEditor::BandEditor::setFrequency (const float freq)
 {
     frequency.setValue (freq, sendNotification);
+}
+
+void FrequalizerAudioProcessorEditor::BandEditor::setGain (const float gainToUse)
+{
+    gain.setValue (gainToUse, sendNotification);
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)
