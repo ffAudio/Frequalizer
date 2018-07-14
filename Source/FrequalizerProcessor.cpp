@@ -260,7 +260,8 @@ void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     ScopedNoDenormals noDenormals;
     ignoreUnused (midiMessages);
 
-    inputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
+    if (getActiveEditor() != nullptr)
+        inputAnalyser.addAudioData (buffer, 0, getTotalNumInputChannels());
 
     if (wasBypassed) {
         filter.reset();
@@ -270,7 +271,8 @@ void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     dsp::ProcessContextReplacing<float> context  (ioBuffer);
     filter.process (context);
 
-    outputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
+    if (getActiveEditor() != nullptr)
+        outputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
 }
 
 AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
