@@ -11,7 +11,8 @@
 #include "SocialButtons.h"
 #include "FrequalizerEditor.h"
 
-static int clickRadius = 4;
+static int   clickRadius = 4;
+static float maxDB       = 24.0f;
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
@@ -91,10 +92,10 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.drawHorizontalLine (plotFrame.getY() + 0.75 * plotFrame.getHeight(), plotFrame.getX(), plotFrame.getRight());
 
     g.setColour (Colours::silver);
-    g.drawFittedText ("+12 dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
-    g.drawFittedText ("+6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+    g.drawFittedText (String (maxDB) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
+    g.drawFittedText (String (maxDB / 2) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
     g.drawFittedText (" 0 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight(), 50, 14, Justification::left, 1);
-    g.drawFittedText ("-6 dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
+    g.drawFittedText (String (- maxDB / 2) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight(), 50, 14, Justification::left, 1);
 
     g.reduceClipRegion (plotFrame);
 
@@ -250,18 +251,20 @@ void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
 
 void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
 {
+    auto pixelsPerDouble = 2.0f * plotFrame.getHeight() / Decibels::decibelsToGain (maxDB);
+
     for (int i=0; i < bandEditors.size(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (i);
         bandEditor->updateSoloState (i);
         if (auto* band = processor.getBand (i)) {
             bandEditor->updateControls (band->type);
             bandEditor->frequencyResponse.clear();
-            processor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1));
+            processor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1), pixelsPerDouble);
         }
         bandEditor->updateSoloState (processor.getBandSolo (i));
     }
     frequencyResponse.clear();
-    processor.createFrequencyPlot (frequencyResponse, processor.getMagnitudes(), plotFrame);
+    processor.createFrequencyPlot (frequencyResponse, processor.getMagnitudes(), plotFrame, pixelsPerDouble);
 }
 
 float FrequalizerAudioProcessorEditor::getPositionForFrequency (float freq)
@@ -276,12 +279,12 @@ float FrequalizerAudioProcessorEditor::getFrequencyForPosition (float pos)
 
 float FrequalizerAudioProcessorEditor::getPositionForGain (float gain, float top, float bottom)
 {
-    return jmap (Decibels::gainToDecibels (gain, -12.0f), -12.0f, 12.0f, bottom, top);
+    return jmap (Decibels::gainToDecibels (gain, -maxDB), -maxDB, maxDB, bottom, top);
 }
 
 float FrequalizerAudioProcessorEditor::getGainForPosition (float pos, float top, float bottom)
 {
-    return Decibels::decibelsToGain (jmap (pos, bottom, top, -12.0f, 12.0f), -12.0f);
+    return Decibels::decibelsToGain (jmap (pos, bottom, top, -maxDB, maxDB), -maxDB);
 }
 
 

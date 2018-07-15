@@ -33,6 +33,8 @@ FrequalizerAudioProcessor::FrequalizerAudioProcessor()
 #endif
 state (*this, &undo)
 {
+    const float maxGain = Decibels::decibelsToGain (24.0f);
+
     state.createAndAddParameter (paramOutput, TRANS ("Output"), TRANS ("Output level"),
                                  NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
                                  [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
@@ -127,7 +129,7 @@ state (*this, &undo)
                                      [](const String& text) { return text.getFloatValue(); },
                                      false, true, false);
         state.createAndAddParameter (getGainParamName (i), band.name + " gain", TRANS ("Gain"),
-                                     NormalisableRange<float> (0.25f, 4.0f, 0.001f),
+                                     NormalisableRange<float> (1.0f / maxGain, maxGain, 0.001f),
                                      band.gain,
                                      [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
                                      [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
@@ -520,13 +522,12 @@ const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
     return magnitudes;
 }
 
-void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds)
+void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble)
 {
-    auto yFactor = 0.25 * bounds.getHeight();
-    p.startNewSubPath (bounds.getX(), bounds.getCentreY() - yFactor * std::log (mags [0]) / std::log (2));
+    p.startNewSubPath (bounds.getX(), bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2));
     const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
     for (int i=1; i < frequencies.size(); ++i) {
-        p.lineTo (bounds.getX() + i * xFactor, bounds.getCentreY() - yFactor * std::log (mags [i]) / std::log (2));
+        p.lineTo (bounds.getX() + i * xFactor, bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2));
     }
 }
 

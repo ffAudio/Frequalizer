@@ -83,7 +83,7 @@ public:
 
     const std::vector<double>& getMagnitudes ();
 
-    void createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds);
+    void createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble);
 
     void createAnalyserPlot (Path& p, const Rectangle<int> bounds, float minFreq, bool input);
 
