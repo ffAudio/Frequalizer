@@ -87,6 +87,8 @@ public:
 
     void createAnalyserPlot (Path& p, const Rectangle<int> bounds, float minFreq, bool input);
 
+    bool checkForNewAnalyserData();
+
     //==============================================================================
     const String getName() const override;
 

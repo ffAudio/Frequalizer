@@ -155,7 +155,8 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
 
 void FrequalizerAudioProcessorEditor::timerCallback()
 {
-    repaint (plotFrame);
+    if (processor.checkForNewAnalyserData())
+        repaint (plotFrame);
 }
 
 void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)

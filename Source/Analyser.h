@@ -78,13 +78,15 @@ public:
 
                 ScopedLock lockedForWriting (pathCreationLock);
                 averager.addFrom (0, 0, averager.getReadPointer (averagerPtr), averager.getNumSamples(), -1.0f);
-                averager.copyFrom (averagerPtr, 0, fftBuffer.getReadPointer (0), averager.getNumSamples());
+                averager.copyFrom (averagerPtr, 0, fftBuffer.getReadPointer (0), averager.getNumSamples(), 1.0f / (averager.getNumSamples() * (averager.getNumChannels() - 1)));
                 averager.addFrom (0, 0, averager.getReadPointer (averagerPtr), averager.getNumSamples());
                 if (++averagerPtr == averager.getNumChannels()) averagerPtr = 1;
+
+                newDataAvailable = true;
             }
 
             if (abstractFifo.getNumReady() < fft.getSize())
-                waitForData.wait (50);
+                waitForData.wait (100);
         }
     }
 
@@ -101,6 +103,13 @@ public:
             p.lineTo (bounds.getX() + factor * indexToX (i, minFreq), binToY (fftData [i], bounds));
     }
 
+    bool checkForNewData()
+    {
+        auto available = newDataAvailable;
+        newDataAvailable = false;
+        return available;
+    }
+
 private:
 
     inline float indexToX (float index, float minFreq) const
@@ -112,7 +121,7 @@ private:
     inline float binToY (float bin, const Rectangle<float> bounds) const
     {
         const float infinity = -80.0f;
-        return jmap (Decibels::gainToDecibels (std::max (0.0f, bin) / (averager.getNumSamples() * (averager.getNumChannels() - 1)), infinity),
+        return jmap (Decibels::gainToDecibels (bin, infinity),
                      infinity, 0.0f, bounds.getBottom(), bounds.getY());
     }
 
@@ -123,6 +132,7 @@ private:
     AudioBuffer<float> fftBuffer;
     AudioBuffer<float> averager;
     int averagerPtr = 1;
+    bool newDataAvailable = false;
 
     WaitableEvent waitForData;
     CriticalSection pathCreationLock;

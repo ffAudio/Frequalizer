@@ -538,6 +538,11 @@ void FrequalizerAudioProcessor::createAnalyserPlot (Path& p, const Rectangle<int
         outputAnalyser.createPath (p, bounds.toFloat(), minFreq);
 }
 
+bool FrequalizerAudioProcessor::checkForNewAnalyserData()
+{
+    return inputAnalyser.checkForNewData() || outputAnalyser.checkForNewData();
+}
+
 //==============================================================================
 void FrequalizerAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
