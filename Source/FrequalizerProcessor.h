@@ -113,9 +113,9 @@ public:
         String      name;
         Colour      colour;
         FilterType  type      = BandPass;
-        double      frequency = 1000.0;
-        double      quality   = 1.0;
-        double      gain      = 1.0;
+        float       frequency = 1000.0f;
+        float       quality   = 1.0f;
+        float       gain      = 1.0f;
         bool        active    = true;
         std::vector<double> magnitudes;
     };
@@ -126,7 +126,7 @@ private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FrequalizerAudioProcessor)
 
-    void updateBand (const int index);
+    void updateBand (const size_t index);
 
     void updateBypassedStates ();
 

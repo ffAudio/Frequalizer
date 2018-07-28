@@ -26,7 +26,7 @@ public:
         auto* b = buttons.add (new ImageButton());
         b->addListener (this);
         auto ffLogo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
-        b->setImages (false, true, true, ffLogo, 1.0, Colours::transparentWhite, ffLogo, 0.7, Colours::transparentWhite, ffLogo, 0.7, Colours::transparentWhite);
+        b->setImages (false, true, true, ffLogo, 1.0f, Colours::transparentWhite, ffLogo, 0.7f, Colours::transparentWhite, ffLogo, 0.7f, Colours::transparentWhite);
         b->setComponentID ("https://foleysfinest.com/");
         b->setTooltip (TRANS ("Go to the Foley's Finest Audio Website \"foleysfinest.com\""));
         addAndMakeVisible (b);
@@ -34,7 +34,7 @@ public:
         b = buttons.add (new ImageButton());
         b->addListener (this);
         auto fbLogo = ImageCache::getFromMemory (FFAudioData::FBlogo_png, FFAudioData::FBlogo_pngSize);
-        b->setImages (false, true, true, fbLogo, 1.0, Colours::transparentWhite, fbLogo, 0.7, Colours::transparentWhite, fbLogo, 0.7, Colours::transparentWhite);
+        b->setImages (false, true, true, fbLogo, 1.0f, Colours::transparentWhite, fbLogo, 0.7f, Colours::transparentWhite, fbLogo, 0.7f, Colours::transparentWhite);
         b->setComponentID ("https://www.fb.com/FoleysFinest/");
         b->setTooltip (TRANS ("Like or connect with us on Facebook"));
         addAndMakeVisible (b);
@@ -42,7 +42,7 @@ public:
         b = buttons.add (new ImageButton());
         b->addListener (this);
         auto inLogo = ImageCache::getFromMemory (FFAudioData::Inlogo_png, FFAudioData::Inlogo_pngSize);
-        b->setImages (false, true, true, inLogo, 1.0, Colours::transparentWhite, inLogo, 0.7, Colours::transparentWhite, inLogo, 0.7, Colours::transparentWhite);
+        b->setImages (false, true, true, inLogo, 1.0f, Colours::transparentWhite, inLogo, 0.7f, Colours::transparentWhite, inLogo, 0.7f, Colours::transparentWhite);
         b->setComponentID ("https://www.linkedin.com/in/daniel-walz/");
         b->setTooltip (TRANS ("See our profile on Linked.In (TM)"));
         addAndMakeVisible (b);
@@ -50,7 +50,7 @@ public:
         b = buttons.add (new ImageButton());
         b->addListener (this);
         auto githubLogo = ImageCache::getFromMemory (FFAudioData::GitHublogo_png, FFAudioData::GitHublogo_pngSize);
-        b->setImages (false, true, true, githubLogo, 1.0, Colours::transparentWhite, githubLogo, 0.7, Colours::transparentWhite, githubLogo, 0.7, Colours::transparentWhite);
+        b->setImages (false, true, true, githubLogo, 1.0f, Colours::transparentWhite, githubLogo, 0.7f, Colours::transparentWhite, githubLogo, 0.7f, Colours::transparentWhite);
         b->setComponentID ("https://github.com/ffAudio/");
         b->setTooltip (TRANS ("Find resources on Github"));
         addAndMakeVisible (b);

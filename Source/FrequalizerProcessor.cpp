@@ -42,7 +42,7 @@ state (*this, &undo)
                                  false, true, false);
 
     frequencies.resize (300);
-    for (int i=0; i < frequencies.size(); ++i) {
+    for (size_t i=0; i < frequencies.size(); ++i) {
         frequencies [i] = 20.0 * std::pow (2.0, i / 30.0);
     }
     magnitudes.resize (frequencies.size());
@@ -55,49 +55,49 @@ state (*this, &undo)
         auto& band = bands [0];
         band.name       = "Lowest";
         band.colour     = Colours::blue;
-        band.frequency  = 20.0;
-        band.quality    = 0.707;
+        band.frequency  = 20.0f;
+        band.quality    = 0.707f;
         band.type       = HighPass;
     }
     {
         auto& band = bands [1];
         band.name       = "Low";
         band.colour     = Colours::brown;
-        band.frequency  = 250.0;
+        band.frequency  = 250.0f;
         band.type       = LowShelf;
     }
     {
         auto& band = bands [2];
         band.name       = "Low Mids";
         band.colour     = Colours::green;
-        band.frequency  = 500.0;
+        band.frequency  = 500.0f;
         band.type       = Peak;
     }
     {
         auto& band = bands [3];
         band.name       = "High Mids";
         band.colour     = Colours::coral;
-        band.frequency  = 1000.0;
+        band.frequency  = 1000.0f;
         band.type       = Peak;
     }
     {
         auto& band = bands [4];
         band.name       = "High";
         band.colour     = Colours::orange;
-        band.frequency  = 5000.0;
+        band.frequency  = 5000.0f;
         band.type       = HighShelf;
     }
     {
         auto& band = bands [5];
         band.name       = "Highest";
         band.colour     = Colours::red;
-        band.frequency  = 12000.0;
-        band.quality    = 0.707;
+        band.frequency  = 12000.0f;
+        band.quality    = 0.707f;
         band.type       = LowPass;
     }
 
-    for (int i = 0; i < bands.size(); ++i) {
-        auto& band = bands [i];
+    for (int i = 0; i < int (bands.size()); ++i) {
+        auto& band = bands [size_t (i)];
 
         band.magnitudes.resize (frequencies.size(), 1.0);
 
@@ -123,7 +123,7 @@ state (*this, &undo)
                                          text.dropLastCharacters (3).getFloatValue(); },
                                      false, true, false);
         state.createAndAddParameter (getQualityParamName (i), band.name + " Q", TRANS ("Quality"),
-                                     NormalisableRange<float> (0.1, 10.0, 0.1),
+                                     NormalisableRange<float> (0.1f, 10.0f, 0.1f),
                                      band.quality,
                                      [](float value) { return String (value, 1); },
                                      [](const String& text) { return text.getFloatValue(); },
@@ -204,16 +204,16 @@ int FrequalizerAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void FrequalizerAudioProcessor::setCurrentProgram (int index)
+void FrequalizerAudioProcessor::setCurrentProgram (int)
 {
 }
 
-const String FrequalizerAudioProcessor::getProgramName (int index)
+const String FrequalizerAudioProcessor::getProgramName (int)
 {
     return {};
 }
 
-void FrequalizerAudioProcessor::changeProgramName (int index, const String& newName)
+void FrequalizerAudioProcessor::changeProgramName (int, const String&)
 {
 }
 
@@ -224,10 +224,10 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
 
     dsp::ProcessSpec spec;
     spec.sampleRate = newSampleRate;
-    spec.maximumBlockSize = newSamplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels ();
+    spec.maximumBlockSize = uint32 (newSamplesPerBlock);
+    spec.numChannels = uint32 (getTotalNumOutputChannels ());
 
-    for (int i=0; i < bands.size(); ++i) {
+    for (size_t i=0; i < bands.size(); ++i) {
         updateBand (i);
     }
     filter.get<6>().setGainLinear (*state.getRawParameterValue (paramOutput));
@@ -236,8 +236,8 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
 
     filter.prepare (spec);
 
-    inputAnalyser.setupAnalyser (sampleRate, sampleRate);
-    outputAnalyser.setupAnalyser (sampleRate, sampleRate);
+    inputAnalyser.setupAnalyser  (int (sampleRate), float (sampleRate));
+    outputAnalyser.setupAnalyser (int (sampleRate), float (sampleRate));
 }
 
 void FrequalizerAudioProcessor::releaseResources()
@@ -315,8 +315,8 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
         return;
     }
 
-    for (int i=0; i < bands.size(); ++i) {
-        if (parameter.startsWith (getBandName (i) + "-")) {
+    for (size_t i=0; i < bands.size(); ++i) {
+        if (parameter.startsWith (getBandName (int (i)) + "-")) {
             if (parameter.endsWith (paramType)) {
                 bands [i].type = static_cast<FilterType> (static_cast<int> (newValue));
             }
@@ -330,7 +330,7 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
                 bands [i].gain = newValue;
             }
             else if (parameter.endsWith (paramActive)) {
-                bands [i].active = newValue;
+                bands [i].active = newValue >= 0.5f;
             }
 
             updateBand (i);
@@ -347,13 +347,13 @@ int FrequalizerAudioProcessor::getNumBands () const
 String FrequalizerAudioProcessor::getBandName   (const int index) const
 {
     if (isPositiveAndBelow (index, bands.size()))
-        return bands [index].name;
+        return bands [size_t (index)].name;
     return TRANS ("unknown");
 }
 Colour FrequalizerAudioProcessor::getBandColour (const int index) const
 {
     if (isPositiveAndBelow (index, bands.size()))
-        return bands [index].colour;
+        return bands [size_t (index)].colour;
     return Colours::silver;
 }
 
@@ -392,7 +392,7 @@ bool FrequalizerAudioProcessor::getBandSolo (const int index) const
 FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (const int index)
 {
     if (isPositiveAndBelow (index, bands.size()))
-        return &bands [index];
+        return &bands [size_t (index)];
     return nullptr;
 }
 
@@ -415,7 +415,7 @@ String FrequalizerAudioProcessor::getFilterTypeName (const FilterType type)
     }
 }
 
-void FrequalizerAudioProcessor::updateBand (const int index)
+void FrequalizerAudioProcessor::updateBand (const size_t index)
 {
     if (sampleRate > 0) {
         dsp::IIR::Coefficients<float>::Ptr newCoefficients;
@@ -494,11 +494,11 @@ void FrequalizerAudioProcessor::updatePlots ()
     std::fill (magnitudes.begin(), magnitudes.end(), gain);
 
     if (isPositiveAndBelow (soloed, bands.size())) {
-        FloatVectorOperations::multiply (magnitudes.data(), bands [soloed].magnitudes.data(), static_cast<int> (magnitudes.size()));
+        FloatVectorOperations::multiply (magnitudes.data(), bands [size_t (soloed)].magnitudes.data(), static_cast<int> (magnitudes.size()));
     }
     else
     {
-        for (int i=0; i < bands.size(); ++i)
+        for (size_t i=0; i < bands.size(); ++i)
             if (bands[i].active)
                 FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
     }
@@ -524,10 +524,12 @@ const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
 
 void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble)
 {
-    p.startNewSubPath (bounds.getX(), bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2));
+    p.startNewSubPath (bounds.getX(), roundToInt (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2)));
     const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
-    for (int i=1; i < frequencies.size(); ++i) {
-        p.lineTo (bounds.getX() + i * xFactor, bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2));
+    for (size_t i=1; i < frequencies.size(); ++i)
+    {
+        p.lineTo (roundToInt (bounds.getX() + i * xFactor),
+                  roundToInt (bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2)));
     }
 }
 
@@ -553,7 +555,7 @@ void FrequalizerAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void FrequalizerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ValueTree tree = ValueTree::readFromData (data, sizeInBytes);
+    ValueTree tree = ValueTree::readFromData (data, size_t (sizeInBytes));
     if (tree.isValid()) {
         state.state = tree;
     }

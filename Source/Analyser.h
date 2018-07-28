@@ -22,7 +22,7 @@ public:
     Analyser() : Thread ("Frequaliser-Analyser"),
                  abstractFifo (48000),
                  fft (12),
-                 windowing (fft.getSize(), dsp::WindowingFunction<Type>::kaiser)
+                 windowing (size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser)
     {
     }
 
@@ -73,7 +73,7 @@ public:
                 if (block2 > 0) fftBuffer.copyFrom (0, block1, audioFifo.getReadPointer (0, start2), block2);
                 abstractFifo.finishedRead (block1 + block2);
 
-                windowing.multiplyWithWindowingTable (fftBuffer.getWritePointer (0), fft.getSize());
+                windowing.multiplyWithWindowingTable (fftBuffer.getWritePointer (0), size_t (fft.getSize()));
                 fft.performFrequencyOnlyForwardTransform (fftBuffer.getWritePointer (0));
 
                 ScopedLock lockedForWriting (pathCreationLock);
