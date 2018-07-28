@@ -7,8 +7,9 @@
               pluginAUExportPrefix="FrequalizerAU" aaxIdentifier="com.foleysfinest.frequalizer"
               pluginManufacturerCode="FFAU" pluginCode="Freq" pluginName="Frequalizer"
               pluginDesc="Frequalizer" reportAppUsage="0" displaySplashScreen="0"
-              binaryDataNamespace="FFAudioData" id="WgRqjr" pluginFormats="buildAU,buildVST3"
-              pluginAUMainType="'aufx'" pluginVST3Category="EQ,Fx" pluginAAXCategory="1">
+              binaryDataNamespace="FFAudioData" id="WgRqjr" pluginFormats="buildAU,buildStandalone,buildVST3"
+              pluginAUMainType="'aufx'" pluginVST3Category="Analyzer,EQ,Fx"
+              pluginAAXCategory="1">
   <MAINGROUP id="QYjF1u" name="Frequalizer">
     <GROUP id="{85087548-8D9A-0248-9641-411914200E27}" name="Source">
       <FILE id="jQNfxl" name="FrequalizerProcessor.cpp" compile="1" resource="0"
@@ -35,24 +36,24 @@
                vst3Folder="">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
-        <CONFIGURATION isDebug="0" name="Release"/>
+        <CONFIGURATION isDebug="0" name="Release" stripLocalSymbols="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_events" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_dsp" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../../JUCE-dev/modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">
@@ -61,21 +62,21 @@
         <CONFIGURATION isDebug="0" name="Release"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_events" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_dsp" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../JUCE-dev/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../../JUCE-dev/modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
   </EXPORTFORMATS>
