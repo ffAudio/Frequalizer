@@ -19,7 +19,12 @@ String FrequalizerAudioProcessor::paramQuality  ("quality");
 String FrequalizerAudioProcessor::paramGain     ("gain");
 String FrequalizerAudioProcessor::paramActive   ("active");
 
-
+namespace IDs
+{
+    String editor {"editor"};
+    String sizeX  {"size-x"};
+    String sizeY  {"size-y"};
+}
 
 //==============================================================================
 FrequalizerAudioProcessor::FrequalizerAudioProcessor()
@@ -549,6 +554,10 @@ bool FrequalizerAudioProcessor::checkForNewAnalyserData()
 //==============================================================================
 void FrequalizerAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
+    auto editor = state.state.getOrCreateChildWithName (IDs::editor, nullptr);
+    editor.setProperty (IDs::sizeX, editorSize.x, nullptr);
+    editor.setProperty (IDs::sizeY, editorSize.y, nullptr);
+
     MemoryOutputStream stream(destData, false);
     state.state.writeToStream (stream);
 }
@@ -558,7 +567,26 @@ void FrequalizerAudioProcessor::setStateInformation (const void* data, int sizeI
     ValueTree tree = ValueTree::readFromData (data, size_t (sizeInBytes));
     if (tree.isValid()) {
         state.state = tree;
+
+        auto editor = state.state.getChildWithName (IDs::editor);
+        if (editor.isValid())
+        {
+            editorSize.setX (editor.getProperty (IDs::sizeX, 900));
+            editorSize.setY (editor.getProperty (IDs::sizeY, 500));
+            if (auto* activeEditor = getActiveEditor())
+                activeEditor->setSize (editorSize.x, editorSize.y);
+        }
     }
+}
+
+Point<int> FrequalizerAudioProcessor::getSavedSize() const
+{
+    return editorSize;
+}
+
+void FrequalizerAudioProcessor::setSavedSize (const Point<int>& size)
+{
+    editorSize = size;
 }
 
 //==============================================================================
