@@ -22,7 +22,7 @@ public:
     Analyser() : Thread ("Frequaliser-Analyser"),
                  abstractFifo (48000),
                  fft (12),
-                 windowing (fft.getSize(), dsp::WindowingFunction<Type>::kaiser, true, 4)
+                 windowing (size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser, true, 4)
     {
     }
 
