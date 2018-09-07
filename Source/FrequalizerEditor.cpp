@@ -35,9 +35,10 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
     output.setTooltip (TRANS ("Overall Gain"));
 
+    auto size = processor.getSavedSize();
     setResizable (true, true);
+    setSize (size.x, size.y);
     setResizeLimits (800, 450, 2990, 1800);
-    setSize (900, 500);
 
     updateFrequencyResponses();
 
@@ -99,16 +100,15 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
     g.reduceClipRegion (plotFrame);
 
-    Path analyser;
     g.setFont (16.0f);
-    processor.createAnalyserPlot (analyser, plotFrame, 20.0f, true);
+    processor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, true);
     g.setColour (inputColour);
     g.drawFittedText ("Input", plotFrame.reduced (8), Justification::topRight, 1);
-    g.strokePath (analyser, PathStrokeType (1.0));
-    processor.createAnalyserPlot (analyser, plotFrame, 20.0f, false);
+    g.strokePath (analyserPath, PathStrokeType (1.0));
+    processor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, false);
     g.setColour (outputColour);
     g.drawFittedText ("Output", plotFrame.reduced (8, 28), Justification::topRight, 1);
-    g.strokePath (analyser, PathStrokeType (1.0));
+    g.strokePath (analyserPath, PathStrokeType (1.0));
 
     for (int i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (i);
@@ -129,6 +129,7 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
 void FrequalizerAudioProcessorEditor::resized()
 {
+    processor.setSavedSize ({ getWidth(), getHeight() });
     plotFrame = getLocalBounds().reduced (3, 3);
 
     socialButtons.setBounds (plotFrame.removeFromBottom (35));

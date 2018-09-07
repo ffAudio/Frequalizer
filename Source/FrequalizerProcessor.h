@@ -107,6 +107,8 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    Point<int> getSavedSize() const;
+    void setSavedSize (const Point<int>& size);
 
     //==============================================================================
     struct Band {
@@ -153,4 +155,5 @@ private:
     Analyser<float> inputAnalyser;
     Analyser<float> outputAnalyser;
 
+    Point<int> editorSize = { 900, 500 };
 };

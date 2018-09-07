@@ -106,6 +106,7 @@ private:
     Rectangle<int>          brandingFrame;
 
     Path                    frequencyResponse;
+    Path                    analyserPath;
 
     GroupComponent          frame;
     Slider                  output;
