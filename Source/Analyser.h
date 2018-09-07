@@ -22,7 +22,7 @@ public:
     Analyser() : Thread ("Frequaliser-Analyser"),
                  abstractFifo (48000),
                  fft (12),
-                 windowing (size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser)
+                 windowing (fft.getSize(), dsp::WindowingFunction<Type>::kaiser, true, 4)
     {
     }
 
@@ -71,7 +71,7 @@ public:
                 abstractFifo.prepareToRead (fft.getSize(), start1, block1, start2, block2);
                 if (block1 > 0) fftBuffer.copyFrom (0, 0, audioFifo.getReadPointer (0, start1), block1);
                 if (block2 > 0) fftBuffer.copyFrom (0, block1, audioFifo.getReadPointer (0, start2), block2);
-                abstractFifo.finishedRead (block1 + block2);
+                abstractFifo.finishedRead ((block1 + block2) / 2);
 
                 windowing.multiplyWithWindowingTable (fftBuffer.getWritePointer (0), size_t (fft.getSize()));
                 fft.performFrequencyOnlyForwardTransform (fftBuffer.getWritePointer (0));
@@ -93,6 +93,7 @@ public:
     void createPath (Path& p, const Rectangle<float> bounds, float minFreq)
     {
         p.clear();
+        p.preallocateSpace (8 + averager.getNumSamples() * 3);
 
         ScopedLock lockedForReading (pathCreationLock);
         const auto* fftData = averager.getReadPointer (0);
