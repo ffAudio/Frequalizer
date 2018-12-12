@@ -23,7 +23,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
 
     addAndMakeVisible (socialButtons);
 
-    for (int i=0; i < processor.getNumBands(); ++i) {
+    for (size_t i=0; i < processor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.add (new BandEditor (i, processor));
         addAndMakeVisible (bandEditor);
     }
@@ -110,13 +110,13 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.drawFittedText ("Output", plotFrame.reduced (8, 28), Justification::topRight, 1);
     g.strokePath (analyserPath, PathStrokeType (1.0));
 
-    for (int i=0; i < processor.getNumBands(); ++i) {
-        auto* bandEditor = bandEditors.getUnchecked (i);
+    for (size_t i=0; i < processor.getNumBands(); ++i) {
+        auto* bandEditor = bandEditors.getUnchecked (int (i));
         auto* band = processor.getBand (i);
 
         g.setColour (band->active ? band->colour : band->colour.withAlpha (0.3f));
         g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
-        g.setColour (draggingBand == i ? band->colour : band->colour.withAlpha (0.3f));
+        g.setColour (draggingBand == int (i) ? band->colour : band->colour.withAlpha (0.3f));
         auto x = roundToInt (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency (float (band->frequency)));
         auto y = roundToInt (getPositionForGain (float (band->gain), plotFrame.getY(), plotFrame.getBottom()));
         g.drawVerticalLine (x, plotFrame.getY(), y - 5);
@@ -165,7 +165,7 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
 {
     if (e.mods.isPopupMenu() && plotFrame.contains (e.x, e.y))
         for (int i=0; i < bandEditors.size(); ++i)
-            if (auto* band = processor.getBand (i))
+            if (auto* band = processor.getBand (size_t (i)))
             {
                 if (std::abs (plotFrame.getX() + getPositionForFrequency (int (band->frequency)) * plotFrame.getWidth()
                               - e.position.getX()) < clickRadius)
@@ -191,22 +191,29 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
 
 void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
 {
-    if (plotFrame.contains (e.x, e.y)) {
-        for (int i=0; i < bandEditors.size(); ++i) {
-            if (auto* band = processor.getBand (i)) {
+    if (plotFrame.contains (e.x, e.y))
+    {
+        for (int i=0; i < bandEditors.size(); ++i)
+        {
+            if (auto* band = processor.getBand (size_t (i)))
+            {
                 auto pos = plotFrame.getX() + getPositionForFrequency (float (band->frequency)) * plotFrame.getWidth();
-                if (std::abs (pos - e.position.getX()) < clickRadius) {
+
+                if (std::abs (pos - e.position.getX()) < clickRadius)
+                {
                     if (std::abs (getPositionForGain (float (band->gain), plotFrame.getY(), plotFrame.getBottom())
                                   - e.position.getY()) < clickRadius)
                     {
-                        draggingGain = processor.getPluginState().getParameter (processor.getGainParamName (i));
+                        draggingGain = processor.getPluginState().getParameter (processor.getGainParamName (size_t (i)));
                         setMouseCursor (MouseCursor (MouseCursor::UpDownLeftRightResizeCursor));
                     }
                     else
                     {
                         setMouseCursor (MouseCursor (MouseCursor::LeftRightResizeCursor));
                     }
-                    if (i != draggingBand) {
+
+                    if (i != draggingBand)
+                    {
                         draggingBand = i;
                         repaint (plotFrame);
                     }
@@ -223,7 +230,8 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
 
 void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
 {
-    if (isPositiveAndBelow (draggingBand, bandEditors.size())) {
+    if (isPositiveAndBelow (draggingBand, bandEditors.size()))
+    {
         auto pos = (e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
         bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
         if (draggingGain)
@@ -235,7 +243,7 @@ void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
 {
     if (plotFrame.contains (e.x, e.y))
     {
-        for (int i=0; i < bandEditors.size(); ++i)
+        for (size_t i=0; i < size_t (bandEditors.size()); ++i)
         {
             if (auto* band = processor.getBand (i))
             {
@@ -254,10 +262,12 @@ void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
 {
     auto pixelsPerDouble = 2.0f * plotFrame.getHeight() / Decibels::decibelsToGain (maxDB);
 
-    for (int i=0; i < bandEditors.size(); ++i) {
+    for (int i=0; i < bandEditors.size(); ++i)
+    {
         auto* bandEditor = bandEditors.getUnchecked (i);
-        bandEditor->updateSoloState (i);
-        if (auto* band = processor.getBand (i)) {
+
+        if (auto* band = processor.getBand (size_t (i)))
+        {
             bandEditor->updateControls (band->type);
             bandEditor->frequencyResponse.clear();
             processor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1), pixelsPerDouble);
@@ -290,7 +300,7 @@ float FrequalizerAudioProcessorEditor::getGainForPosition (float pos, float top,
 
 
 //==============================================================================
-FrequalizerAudioProcessorEditor::BandEditor::BandEditor (const int i, FrequalizerAudioProcessor& p)
+FrequalizerAudioProcessorEditor::BandEditor::BandEditor (size_t i, FrequalizerAudioProcessor& p)
   : index (i),
     processor (p),
     frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
@@ -426,6 +436,6 @@ void FrequalizerAudioProcessorEditor::BandEditor::setType (int type)
 void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)
 {
     if (b == &solo) {
-        processor.setBandSolo (solo.getToggleState() ? index : -1);
+        processor.setBandSolo (solo.getToggleState() ? int (index) : -1);
     }
 }

@@ -43,11 +43,12 @@ public:
     static String paramGain;
     static String paramActive;
 
-    String getTypeParamName (const int index) const;
-    String getFrequencyParamName (const int index) const;
-    String getQualityParamName (const int index) const;
-    String getGainParamName (const int index) const;
-    String getActiveParamName (const int index) const;
+    static String getBandID (size_t index);
+    static String getTypeParamName (size_t index);
+    static String getFrequencyParamName (size_t index);
+    static String getQualityParamName (size_t index);
+    static String getGainParamName (size_t index);
+    static String getActiveParamName (size_t index);
 
     //==============================================================================
     FrequalizerAudioProcessor();
@@ -67,13 +68,13 @@ public:
 
     AudioProcessorValueTreeState& getPluginState();
 
-    int getNumBands () const;
+    size_t getNumBands () const;
 
-    String     getBandName   (const int index) const;
-    Colour     getBandColour (const int index) const;
+    String getBandName   (size_t index) const;
+    Colour getBandColour (size_t index) const;
 
-    void setBandSolo (const int index);
-    bool getBandSolo (const int index) const;
+    void setBandSolo (int index);
+    bool getBandSolo (int index) const;
 
     static String getFilterTypeName (const FilterType type);
 
@@ -122,7 +123,8 @@ public:
         std::vector<double> magnitudes;
     };
 
-    Band* getBand (const int index);
+    Band* getBand (size_t index);
+    int getBandIndexFromID (String paramID);
 
 private:
     //==============================================================================

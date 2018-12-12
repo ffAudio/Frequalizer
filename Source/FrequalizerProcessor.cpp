@@ -26,26 +26,133 @@ namespace IDs
     String sizeY  {"size-y"};
 }
 
-//==============================================================================
-FrequalizerAudioProcessor::FrequalizerAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                       .withInput  ("Input",  AudioChannelSet::stereo(), true)
-                       .withOutput ("Output", AudioChannelSet::stereo(), true)
-                       ),
-#else
-:
-#endif
-state (*this, &undo)
+String FrequalizerAudioProcessor::getBandID (size_t index)
 {
+    switch (index)
+    {
+        case 0: return "Lowest";
+        case 1: return "Low";
+        case 2: return "Low Mids";
+        case 3: return "High Mids";
+        case 4: return "High";
+        case 5: return "Highest";
+        default: break;
+    }
+    return "unknown";
+}
+
+int FrequalizerAudioProcessor::getBandIndexFromID (String paramID)
+{
+    for (size_t i=0; i < 6; ++i)
+        if (paramID.startsWith (getBandID (i) + "-"))
+            return int (i);
+
+    return -1;
+}
+
+std::vector<FrequalizerAudioProcessor::Band> createDefaultBands()
+{
+    std::vector<FrequalizerAudioProcessor::Band> defaults;
+    defaults.push_back ({ TRANS ("Lowest"),    Colours::blue,   FrequalizerAudioProcessor::HighPass,    20.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back ({ TRANS ("Low"),       Colours::brown,  FrequalizerAudioProcessor::LowShelf,   250.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back ({ TRANS ("Low Mids"),  Colours::green,  FrequalizerAudioProcessor::Peak,       500.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back ({ TRANS ("High Mids"), Colours::coral,  FrequalizerAudioProcessor::Peak,      1000.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back ({ TRANS ("High"),      Colours::orange, FrequalizerAudioProcessor::HighShelf, 5000.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back ({ TRANS ("Highest"),   Colours::red,    FrequalizerAudioProcessor::LowPass,  12000.0f, 0.707f, 1.0f, true, {}});
+    return defaults;
+}
+
+AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+{
+    std::vector<std::unique_ptr<AudioProcessorParameterGroup>> params;
+
+    // setting defaults
     const float maxGain = Decibels::decibelsToGain (24.0f);
+    auto defaults = createDefaultBands();
 
-    state.createAndAddParameter (paramOutput, TRANS ("Output"), TRANS ("Output level"),
-                                 NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
-                                 [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
-                                 [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
-                                 false, true, false);
+    {
+        auto param = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::paramOutput, TRANS ("Output"),
+                                                            NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
+                                                            TRANS ("Output level"),
+                                                            AudioProcessorParameter::genericParameter,
+                                                            [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
+                                                            [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
 
+        auto group = std::make_unique<AudioProcessorParameterGroup> ("global", TRANS ("Globals"), "|", std::move (param));
+        params.push_back (std::move (group));
+    }
+
+    for (size_t i = 0; i < defaults.size(); ++i)
+    {
+        auto typeParameter = std::make_unique<AudioParameterInt> (FrequalizerAudioProcessor::getTypeParamName (i),
+                                                                  TRANS ("Filter Type"),
+                                                                  0, FrequalizerAudioProcessor::LastFilterID,
+                                                                  defaults [i].type,
+                                                                  TRANS ("Filter Type"),
+                                                                  [](float value, int) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType>(static_cast<int> (value))); },
+                                                                  [](String text) {
+                                                                      for (int i=0; i < FrequalizerAudioProcessor::LastFilterID; ++i)
+                                                                          if (text == FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType>(i)))
+                                                                              return static_cast<FrequalizerAudioProcessor::FilterType>(i);
+                                                                      return FrequalizerAudioProcessor::NoFilter; });
+
+        auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i), TRANS ("Frequency"),
+                                                                    NormalisableRange<float> {20.0f, 20000.0f, 1.0f},
+                                                                    defaults [i].frequency,
+                                                                    TRANS ("Frequency"),
+                                                                    AudioProcessorParameter::genericParameter,
+                                                                    [](float value, int) { return (value < 1000) ?
+                                                                        String (value, 0) + " Hz" :
+                                                                        String (value / 1000.0, 2) + " kHz"; },
+                                                                    [](String text) { return text.endsWith(" kHz") ?
+                                                                        text.dropLastCharacters (4).getFloatValue() * 1000.0 :
+                                                                        text.dropLastCharacters (3).getFloatValue(); });
+
+        auto qltyParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i), TRANS ("Quality"),
+                                                                    NormalisableRange<float> {0.1f, 10.0f, 1.0f},
+                                                                    defaults [i].quality,
+                                                                    TRANS ("Quality"),
+                                                                    AudioProcessorParameter::genericParameter,
+                                                                    [](float value, int) { return String (value, 1); },
+                                                                    [](const String& text) { return text.getFloatValue(); });
+
+        auto gainParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i), TRANS ("Gain"),
+                                                                    NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f},
+                                                                    defaults [i].gain,
+                                                                    TRANS ("Band Gain"),
+                                                                    AudioProcessorParameter::genericParameter,
+                                                                    [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
+                                                                    [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
+
+        auto actvParameter = std::make_unique<AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i), TRANS ("Active"),
+                                                                   defaults [i].active,
+                                                                   TRANS ("Band Active"),
+                                                                   [](float value, int) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
+                                                                   [](String text) {return text == TRANS ("active");});
+
+        auto group = std::make_unique<AudioProcessorParameterGroup> ("band" + String (i), defaults [i].name, "|",
+                                                                     std::move (typeParameter),
+                                                                     std::move (freqParameter),
+                                                                     std::move (qltyParameter),
+                                                                     std::move (gainParameter),
+                                                                     std::move (actvParameter));
+
+        params.push_back (std::move (group));
+    }
+
+    return { params.begin(), params.end() };
+}
+
+//==============================================================================
+FrequalizerAudioProcessor::FrequalizerAudioProcessor() :
+#ifndef JucePlugin_PreferredChannelConfigurations
+    AudioProcessor (BusesProperties()
+                    .withInput  ("Input",  AudioChannelSet::stereo(), true)
+                    .withOutput ("Output", AudioChannelSet::stereo(), true)
+                    ),
+#endif
+state (*this, &undo, "PARAMS", createParameterLayout())
+{
     frequencies.resize (300);
     for (size_t i=0; i < frequencies.size(); ++i) {
         frequencies [i] = 20.0 * std::pow (2.0, i / 30.0);
@@ -53,104 +160,11 @@ state (*this, &undo)
     magnitudes.resize (frequencies.size());
 
     // needs to be in sync with the ProcessorChain filter
-    bands.resize (6);
+    bands = createDefaultBands();
 
-    // setting defaults
+    for (size_t i = 0; i < bands.size(); ++i)
     {
-        auto& band = bands [0];
-        band.name       = "Lowest";
-        band.colour     = Colours::blue;
-        band.frequency  = 20.0f;
-        band.quality    = 0.707f;
-        band.type       = HighPass;
-    }
-    {
-        auto& band = bands [1];
-        band.name       = "Low";
-        band.colour     = Colours::brown;
-        band.frequency  = 250.0f;
-        band.type       = LowShelf;
-    }
-    {
-        auto& band = bands [2];
-        band.name       = "Low Mids";
-        band.colour     = Colours::green;
-        band.frequency  = 500.0f;
-        band.type       = Peak;
-    }
-    {
-        auto& band = bands [3];
-        band.name       = "High Mids";
-        band.colour     = Colours::coral;
-        band.frequency  = 1000.0f;
-        band.type       = Peak;
-    }
-    {
-        auto& band = bands [4];
-        band.name       = "High";
-        band.colour     = Colours::orange;
-        band.frequency  = 5000.0f;
-        band.type       = HighShelf;
-    }
-    {
-        auto& band = bands [5];
-        band.name       = "Highest";
-        band.colour     = Colours::red;
-        band.frequency  = 12000.0f;
-        band.quality    = 0.707f;
-        band.type       = LowPass;
-    }
-
-    for (int i = 0; i < int (bands.size()); ++i) {
-        auto& band = bands [size_t (i)];
-
-        band.magnitudes.resize (frequencies.size(), 1.0);
-
-        auto typeParameter = state.createParameter (getTypeParamName (i), band.name + " Type", TRANS ("Filter Type"),
-                                                    NormalisableRange<float> (0, LastFilterID, 1),
-                                                    band.type,
-                                                    [](float value) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(static_cast<int> (value))); },
-                                                    [](String text) {
-                                                        for (int i=0; i < LastFilterID; ++i)
-                                                            if (text == FrequalizerAudioProcessor::getFilterTypeName (static_cast<FilterType>(i)))
-                                                                return static_cast<FilterType>(i);
-                                                        return NoFilter; },
-                                                    false, true, true);
-        auto freqParameter = state.createParameter (getFrequencyParamName (i), band.name + " freq", "Frequency",
-                                                    NormalisableRange<float> (20.0, 20000.0, 1.0),
-                                                    band.frequency,
-                                                    [](float value) { return (value < 1000) ?
-                                                        String (value, 0) + " Hz" :
-                                                        String (value / 1000.0, 2) + " kHz"; },
-                                                    [](String text) { return text.endsWith(" kHz") ?
-                                                        text.dropLastCharacters (4).getFloatValue() * 1000.0 :
-                                                        text.dropLastCharacters (3).getFloatValue(); },
-                                                    false, true, false);
-        auto qltyParameter = state.createParameter (getQualityParamName (i), band.name + " Q", TRANS ("Quality"),
-                                                    NormalisableRange<float> (0.1f, 10.0f, 0.1f),
-                                                    band.quality,
-                                                    [](float value) { return String (value, 1); },
-                                                    [](const String& text) { return text.getFloatValue(); },
-                                                    false, true, false);
-        auto gainParameter = state.createParameter (getGainParamName (i), band.name + " gain", TRANS ("Gain"),
-                                                    NormalisableRange<float> (1.0f / maxGain, maxGain, 0.001f),
-                                                    band.gain,
-                                                    [](float value) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
-                                                    [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());},
-                                                    false, true, false);
-        auto actvParameter = state.createParameter (getActiveParamName (i), band.name + " active", TRANS ("Active"),
-                                                    NormalisableRange<float> (0, 1, 1),
-                                                    band.active,
-                                                    [](float value) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
-                                                    [](String text) {return text == TRANS ("active");},
-                                                    false, true, true);
-
-        addParameterGroup (std::make_unique<AudioProcessorParameterGroup> ("band" + String (i), band.name, "|",
-                                                                           std::move (typeParameter),
-                                                                           std::move (freqParameter),
-                                                                           std::move (qltyParameter),
-                                                                           std::move (gainParameter),
-                                                                           std::move (actvParameter)));
+        bands [i].magnitudes.resize (frequencies.size(), 1.0);
 
         state.addParameterListener (getTypeParamName (i), this);
         state.addParameterListener (getFrequencyParamName (i), this);
@@ -293,29 +307,29 @@ AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
     return state;
 }
 
-String FrequalizerAudioProcessor::getTypeParamName (const int index) const
+String FrequalizerAudioProcessor::getTypeParamName (size_t index)
 {
-    return getBandName (index) + "-" + paramType;
+    return getBandID (index) + "-" + paramType;
 }
 
-String FrequalizerAudioProcessor::getFrequencyParamName (const int index) const
+String FrequalizerAudioProcessor::getFrequencyParamName (size_t index)
 {
-    return getBandName (index) + "-" + paramFrequency;
+    return getBandID (index) + "-" + paramFrequency;
 }
 
-String FrequalizerAudioProcessor::getQualityParamName (const int index) const
+String FrequalizerAudioProcessor::getQualityParamName (size_t index)
 {
-    return getBandName (index) + "-" + paramQuality;
+    return getBandID (index) + "-" + paramQuality;
 }
 
-String FrequalizerAudioProcessor::getGainParamName (const int index) const
+String FrequalizerAudioProcessor::getGainParamName (size_t index)
 {
-    return getBandName (index) + "-" + paramGain;
+    return getBandID (index) + "-" + paramGain;
 }
 
-String FrequalizerAudioProcessor::getActiveParamName (const int index) const
+String FrequalizerAudioProcessor::getActiveParamName (size_t index)
 {
-    return getBandName (index) + "-" + paramActive;
+    return getBandID (index) + "-" + paramActive;
 }
 
 void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
@@ -326,49 +340,54 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
         return;
     }
 
-    for (size_t i=0; i < bands.size(); ++i) {
-        if (parameter.startsWith (getBandName (int (i)) + "-")) {
-            if (parameter.endsWith (paramType)) {
-                bands [i].type = static_cast<FilterType> (static_cast<int> (newValue));
-            }
-            else if (parameter.endsWith (paramFrequency)) {
-                bands [i].frequency = newValue;
-            }
-            else if (parameter.endsWith (paramQuality)) {
-                bands [i].quality = newValue;
-            }
-            else if (parameter.endsWith (paramGain)) {
-                bands [i].gain = newValue;
-            }
-            else if (parameter.endsWith (paramActive)) {
-                bands [i].active = newValue >= 0.5f;
-            }
-
-            updateBand (i);
-            return;
+    int index = getBandIndexFromID (parameter);
+    if (isPositiveAndBelow (index, bands.size()))
+    {
+        auto* band = getBand (size_t (index));
+        if (parameter.endsWith (paramType)) {
+            band->type = static_cast<FilterType> (static_cast<int> (newValue));
         }
+        else if (parameter.endsWith (paramFrequency)) {
+            band->frequency = newValue;
+        }
+        else if (parameter.endsWith (paramQuality)) {
+            band->quality = newValue;
+        }
+        else if (parameter.endsWith (paramGain)) {
+            band->gain = newValue;
+        }
+        else if (parameter.endsWith (paramActive)) {
+            band->active = newValue >= 0.5f;
+        }
+
+        updateBand (size_t (index));
     }
 }
 
-int FrequalizerAudioProcessor::getNumBands () const
+size_t FrequalizerAudioProcessor::getNumBands () const
 {
-    return static_cast<int> (bands.size());
+    return bands.size();
 }
 
-String FrequalizerAudioProcessor::getBandName   (const int index) const
+String FrequalizerAudioProcessor::getBandName   (size_t index) const
 {
     if (isPositiveAndBelow (index, bands.size()))
         return bands [size_t (index)].name;
     return TRANS ("unknown");
 }
-Colour FrequalizerAudioProcessor::getBandColour (const int index) const
+Colour FrequalizerAudioProcessor::getBandColour (size_t index) const
 {
     if (isPositiveAndBelow (index, bands.size()))
         return bands [size_t (index)].colour;
     return Colours::silver;
 }
 
-void FrequalizerAudioProcessor::setBandSolo (const int index)
+bool FrequalizerAudioProcessor::getBandSolo (int index) const
+{
+    return index == soloed;
+}
+
+void FrequalizerAudioProcessor::setBandSolo (int index)
 {
     soloed = index;
     updateBypassedStates();
@@ -395,15 +414,10 @@ void FrequalizerAudioProcessor::updateBypassedStates ()
     updatePlots();
 }
 
-bool FrequalizerAudioProcessor::getBandSolo (const int index) const
-{
-    return index == soloed;
-}
-
-FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (const int index)
+FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (size_t index)
 {
     if (isPositiveAndBelow (index, bands.size()))
-        return &bands [size_t (index)];
+        return &bands [index];
     return nullptr;
 }
 

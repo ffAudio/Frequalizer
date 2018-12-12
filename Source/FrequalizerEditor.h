@@ -43,7 +43,7 @@ public:
                        public Button::Listener
     {
     public:
-        BandEditor (const int i, FrequalizerAudioProcessor& processor);
+        BandEditor (size_t i, FrequalizerAudioProcessor& processor);
 
         void resized () override;
 
@@ -63,7 +63,7 @@ public:
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BandEditor)
 
-        int index;
+        size_t index;
         FrequalizerAudioProcessor& processor;
 
         GroupComponent      frame;
