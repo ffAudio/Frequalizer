@@ -19,11 +19,9 @@ template<typename Type>
 class Analyser : public Thread
 {
 public:
-    Analyser() : Thread ("Frequaliser-Analyser"),
-                 abstractFifo (48000),
-                 fft (12),
-                 windowing (size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser, true, 4)
+    Analyser() : Thread ("Frequaliser-Analyser")
     {
+        averager.clear();
     }
 
     virtual ~Analyser() = default;
@@ -53,8 +51,6 @@ public:
         sampleRate = sampleRateToUse;
         audioFifo.setSize (1, audioFifoSize);
         abstractFifo.setTotalSize (audioFifoSize);
-        fftBuffer.setSize (1, fft.getSize() * 2);
-        averager.setSize (5, fft.getSize() / 2, false, true);
 
         startThread (5);
     }
@@ -126,20 +122,22 @@ private:
                      infinity, 0.0f, bounds.getBottom(), bounds.getY());
     }
 
-    Type sampleRate {};
-
-    AbstractFifo abstractFifo;
-    AudioBuffer<Type> audioFifo;
-    AudioBuffer<float> fftBuffer;
-    AudioBuffer<float> averager;
-    int averagerPtr = 1;
-    bool newDataAvailable = false;
-
     WaitableEvent waitForData;
     CriticalSection pathCreationLock;
 
-    dsp::FFT fft;
-    dsp::WindowingFunction<Type> windowing;
+    Type sampleRate {};
+
+    dsp::FFT fft                           { 12 };
+    dsp::WindowingFunction<Type> windowing { size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser, true, 4 };
+    AudioBuffer<float> fftBuffer           { 1, fft.getSize() * 2 };
+
+    AudioBuffer<float> averager            { 5, fft.getSize() / 2 };
+    int averagerPtr = 1;
+
+    AbstractFifo abstractFifo              { 48000 };
+    AudioBuffer<Type> audioFifo;
+
+    bool newDataAvailable = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Analyser)
 };
