@@ -40,7 +40,7 @@
 #endif
 
 #ifndef JUCE_REPORT_APP_USAGE
- #define JUCE_REPORT_APP_USAGE 0
+ #define JUCE_REPORT_APP_USAGE 1
 #endif
 
 // END SECTION A
@@ -350,13 +350,13 @@
  #define JucePlugin_Enable_IAA             0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "Frequalizer"
+ #define JucePlugin_Name                   "Frequalizer Free"
 #endif
 #ifndef  JucePlugin_Desc
- #define JucePlugin_Desc                   "Frequalizer"
+ #define JucePlugin_Desc                   "Frequalizer Free"
 #endif
 #ifndef  JucePlugin_Manufacturer
- #define JucePlugin_Manufacturer           "Foleys Finest Audio"
+ #define JucePlugin_Manufacturer           "Foleys Finest"
 #endif
 #ifndef  JucePlugin_ManufacturerWebsite
  #define JucePlugin_ManufacturerWebsite    "https://foleysfinest.com"
@@ -368,7 +368,7 @@
  #define JucePlugin_ManufacturerCode       0x46464155 // 'FFAU'
 #endif
 #ifndef  JucePlugin_PluginCode
- #define JucePlugin_PluginCode             0x46726571 // 'Freq'
+ #define JucePlugin_PluginCode             0x46714f53 // 'FqOS'
 #endif
 #ifndef  JucePlugin_IsSynth
  #define JucePlugin_IsSynth                0
@@ -386,13 +386,13 @@
  #define JucePlugin_EditorRequiresKeyboardFocus  0
 #endif
 #ifndef  JucePlugin_Version
- #define JucePlugin_Version                1.0.0
+ #define JucePlugin_Version                1.1.0
 #endif
 #ifndef  JucePlugin_VersionCode
- #define JucePlugin_VersionCode            0x10000
+ #define JucePlugin_VersionCode            0x10100
 #endif
 #ifndef  JucePlugin_VersionString
- #define JucePlugin_VersionString          "1.0.0"
+ #define JucePlugin_VersionString          "1.1.0"
 #endif
 #ifndef  JucePlugin_VSTUniqueID
  #define JucePlugin_VSTUniqueID            JucePlugin_PluginCode
@@ -461,7 +461,7 @@
  #define JucePlugin_IAASubType             JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_IAAName
- #define JucePlugin_IAAName                "Foleys Finest Audio: Frequalizer"
+ #define JucePlugin_IAAName                "Foleys Finest: Frequalizer Free"
 #endif
 
 //==============================================================================

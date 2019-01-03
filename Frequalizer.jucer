@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="Frequalizer" projectType="audioplug" buildStandalone="0"
+<JUCERPROJECT name="Frequalizer Free" projectType="audioplug" buildStandalone="0"
               jucerVersion="5.4.1" bundleIdentifier="com.foleysfinest.frequalizer"
-              companyName="Foleys Finest Audio" companyWebsite="https://foleysfinest.com"
-              companyEmail="info@foleysfinest.com" pluginManufacturer="Foleys Finest Audio"
+              companyName="Foleys Finest" companyWebsite="https://foleysfinest.com"
+              companyEmail="info@foleysfinest.com" pluginManufacturer="Foleys Finest"
               pluginAUExportPrefix="FrequalizerAU" aaxIdentifier="com.foleysfinest.frequalizer"
-              pluginManufacturerCode="FFAU" pluginCode="Freq" pluginName="Frequalizer"
-              pluginDesc="Frequalizer" reportAppUsage="0" displaySplashScreen="0"
-              binaryDataNamespace="FFAudioData" id="WgRqjr" pluginFormats="buildAU,buildStandalone,buildVST3"
+              pluginManufacturerCode="FFAU" pluginCode="FqOS" pluginName="Frequalizer Free"
+              pluginDesc="Frequalizer Free" binaryDataNamespace="FFAudioData"
+              id="WgRqjr" pluginFormats="buildAU,buildStandalone,buildVST3"
               pluginAUMainType="'aufx'" pluginVST3Category="Analyzer,EQ,Fx"
-              pluginAAXCategory="1">
-  <MAINGROUP id="QYjF1u" name="Frequalizer">
+              pluginAAXCategory="1" version="1.1.0" companyCopyright="2018-2019 by Foleys Finest Audio">
+  <MAINGROUP id="QYjF1u" name="Frequalizer Free">
     <GROUP id="{85087548-8D9A-0248-9641-411914200E27}" name="Source">
       <FILE id="jQNfxl" name="FrequalizerProcessor.cpp" compile="1" resource="0"
             file="Source/FrequalizerProcessor.cpp"/>

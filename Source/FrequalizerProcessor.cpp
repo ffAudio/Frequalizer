@@ -84,17 +84,10 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 
     for (size_t i = 0; i < defaults.size(); ++i)
     {
-        auto typeParameter = std::make_unique<AudioParameterInt> (FrequalizerAudioProcessor::getTypeParamName (i),
-                                                                  TRANS ("Filter Type"),
-                                                                  0, FrequalizerAudioProcessor::LastFilterID,
-                                                                  defaults [i].type,
-                                                                  TRANS ("Filter Type"),
-                                                                  [](float value, int) { return FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType>(static_cast<int> (value))); },
-                                                                  [](String text) {
-                                                                      for (int i=0; i < FrequalizerAudioProcessor::LastFilterID; ++i)
-                                                                          if (text == FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType>(i)))
-                                                                              return static_cast<FrequalizerAudioProcessor::FilterType>(i);
-                                                                      return FrequalizerAudioProcessor::NoFilter; });
+        auto typeParameter = std::make_unique<AudioParameterChoice> (FrequalizerAudioProcessor::getTypeParamName (i),
+                                                                     TRANS ("Filter Type"),
+                                                                     FrequalizerAudioProcessor::getFilterTypeNames(),
+                                                                     defaults [i].type);
 
         auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i), TRANS ("Frequency"),
                                                                     NormalisableRange<float> {20.0f, 20000.0f, 1.0f},
@@ -421,23 +414,22 @@ FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (size_t inde
     return nullptr;
 }
 
-String FrequalizerAudioProcessor::getFilterTypeName (const FilterType type)
+StringArray FrequalizerAudioProcessor::getFilterTypeNames()
 {
-    switch (type) {
-        case NoFilter:      return TRANS ("No Filter");
-        case HighPass:      return TRANS ("High Pass");
-        case HighPass1st:   return TRANS ("1st High Pass");
-        case LowShelf:      return TRANS ("Low Shelf");
-        case BandPass:      return TRANS ("Band Pass");
-        case AllPass:       return TRANS ("All Pass");
-        case AllPass1st:    return TRANS ("1st All Pass");
-        case Notch:         return TRANS ("Notch");
-        case Peak:          return TRANS ("Peak");
-        case HighShelf:     return TRANS ("High Shelf");
-        case LowPass1st:    return TRANS ("1st Low Pass");
-        case LowPass:       return TRANS ("Low Pass");
-        default:            return TRANS ("unknown");
-    }
+    return {
+        TRANS ("No Filter"),
+        TRANS ("High Pass"),
+        TRANS ("1st High Pass"),
+        TRANS ("Low Shelf"),
+        TRANS ("Band Pass"),
+        TRANS ("All Pass"),
+        TRANS ("1st All Pass"),
+        TRANS ("Notch"),
+        TRANS ("Peak"),
+        TRANS ("High Shelf"),
+        TRANS ("1st Low Pass"),
+        TRANS ("Low Pass")
+    };
 }
 
 void FrequalizerAudioProcessor::updateBand (const size_t index)

@@ -163,30 +163,33 @@ void FrequalizerAudioProcessorEditor::timerCallback()
 
 void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
 {
-    if (e.mods.isPopupMenu() && plotFrame.contains (e.x, e.y))
-        for (int i=0; i < bandEditors.size(); ++i)
-            if (auto* band = processor.getBand (size_t (i)))
-            {
-                if (std::abs (plotFrame.getX() + getPositionForFrequency (int (band->frequency)) * plotFrame.getWidth()
-                              - e.position.getX()) < clickRadius)
-                {
-                    contextMenu.clear();
-                    for (int t=0; t < FrequalizerAudioProcessor::LastFilterID; ++t)
-                        contextMenu.addItem (t + 1,
-                                             FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType> (t)),
-                                             true,
-                                             band->type == t);
+    if (! e.mods.isPopupMenu() || ! plotFrame.contains (e.x, e.y))
+        return;
 
-                    contextMenu.showMenuAsync (PopupMenu::Options()
-                                               .withTargetComponent (this)
-                                               .withTargetScreenArea ({e.getScreenX(), e.getScreenY(), 1, 1})
-                                               , [this, i](int selected)
-                    {
-                        if (selected > 0)
-                            bandEditors.getUnchecked (i)->setType (selected - 1);
-                    });
-                }
+    for (int i=0; i < bandEditors.size(); ++i)
+    {
+        if (auto* band = processor.getBand (size_t (i)))
+        {
+            if (std::abs (plotFrame.getX() + getPositionForFrequency (int (band->frequency)) * plotFrame.getWidth()
+                          - e.position.getX()) < clickRadius)
+            {
+                contextMenu.clear();
+                const auto& names = FrequalizerAudioProcessor::getFilterTypeNames();
+                for (int t=0; t < names.size(); ++t)
+                    contextMenu.addItem (t + 1, names [t], true, band->type == t);
+
+                contextMenu.showMenuAsync (PopupMenu::Options()
+                                           .withTargetComponent (this)
+                                           .withTargetScreenArea ({e.getScreenX(), e.getScreenY(), 1, 1})
+                                           , [this, i](int selected)
+                                           {
+                                               if (selected > 0)
+                                                   bandEditors.getUnchecked (i)->setType (selected - 1);
+                                           });
+                return;
             }
+        }
+    }
 }
 
 void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
@@ -315,8 +318,8 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (size_t i, FrequalizerAu
     frame.setColour (GroupComponent::outlineColourId, processor.getBandColour (index));
     addAndMakeVisible (frame);
 
-    for (int j=0; j < FrequalizerAudioProcessor::LastFilterID; ++j)
-        filterType.addItem (FrequalizerAudioProcessor::getFilterTypeName (static_cast<FrequalizerAudioProcessor::FilterType> (j)), j + 1);
+    if (auto* choiceParameter = dynamic_cast<AudioParameterChoice*>(processor.getPluginState().getParameter (processor.getTypeParamName (index))))
+        filterType.addItemList (choiceParameter->choices, 1);
 
     addAndMakeVisible (filterType);
     boxAttachments.add (new AudioProcessorValueTreeState::ComboBoxAttachment (processor.getPluginState(), processor.getTypeParamName (index), filterType));

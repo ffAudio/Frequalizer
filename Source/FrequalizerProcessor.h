@@ -76,7 +76,7 @@ public:
     void setBandSolo (int index);
     bool getBandSolo (int index) const;
 
-    static String getFilterTypeName (const FilterType type);
+    static StringArray getFilterTypeNames();
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
