@@ -113,6 +113,17 @@ public:
 
     //==============================================================================
     struct Band {
+        Band (const String& nameToUse, Colour colourToUse, FilterType typeToUse,
+            float frequencyToUse, float qualityToUse, float gainToUse=1.0f, bool shouldBeActive=true)
+          : name (nameToUse),
+            colour (colourToUse),
+            type (typeToUse),
+            frequency (frequencyToUse),
+            quality (qualityToUse),
+            gain (gainToUse),
+            active (shouldBeActive)
+        {}
+
         String      name;
         Colour      colour;
         FilterType  type      = BandPass;
