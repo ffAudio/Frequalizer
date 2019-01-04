@@ -53,12 +53,12 @@ int FrequalizerAudioProcessor::getBandIndexFromID (String paramID)
 std::vector<FrequalizerAudioProcessor::Band> createDefaultBands()
 {
     std::vector<FrequalizerAudioProcessor::Band> defaults;
-    defaults.push_back ({ TRANS ("Lowest"),    Colours::blue,   FrequalizerAudioProcessor::HighPass,    20.0f, 0.707f, 1.0f, true, {}});
-    defaults.push_back ({ TRANS ("Low"),       Colours::brown,  FrequalizerAudioProcessor::LowShelf,   250.0f, 0.707f, 1.0f, true, {}});
-    defaults.push_back ({ TRANS ("Low Mids"),  Colours::green,  FrequalizerAudioProcessor::Peak,       500.0f, 0.707f, 1.0f, true, {}});
-    defaults.push_back ({ TRANS ("High Mids"), Colours::coral,  FrequalizerAudioProcessor::Peak,      1000.0f, 0.707f, 1.0f, true, {}});
-    defaults.push_back ({ TRANS ("High"),      Colours::orange, FrequalizerAudioProcessor::HighShelf, 5000.0f, 0.707f, 1.0f, true, {}});
-    defaults.push_back ({ TRANS ("Highest"),   Colours::red,    FrequalizerAudioProcessor::LowPass,  12000.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("Lowest"),    Colours::blue,   FrequalizerAudioProcessor::HighPass,    20.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("Low"),       Colours::brown,  FrequalizerAudioProcessor::LowShelf,   250.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("Low Mids"),  Colours::green,  FrequalizerAudioProcessor::Peak,       500.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("High Mids"), Colours::coral,  FrequalizerAudioProcessor::Peak,      1000.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("High"),      Colours::orange, FrequalizerAudioProcessor::HighShelf, 5000.0f, 0.707f, 1.0f, true, {}});
+    defaults.push_back (FrequalizerAudioProcessor::Band { TRANS ("Highest"),   Colours::red,    FrequalizerAudioProcessor::LowPass,  12000.0f, 0.707f, 1.0f, true, {}});
     return defaults;
 }
 
