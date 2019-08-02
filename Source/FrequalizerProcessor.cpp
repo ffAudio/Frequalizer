@@ -90,9 +90,9 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                                      defaults [i].type);
 
         auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i), TRANS ("Frequency"),
-                                                                    NormalisableRange<float> {20.0f, 20000.0f, 1.0f},
+                                                                    NormalisableRange<float> {20.0f, 20000.0f, 1.0f, std::log (0.5f) / std::log (980.0f / 19980.0f)},
                                                                     defaults [i].frequency,
-                                                                    TRANS ("Frequency"),
+                                                                    String(),
                                                                     AudioProcessorParameter::genericParameter,
                                                                     [](float value, int) { return (value < 1000) ?
                                                                         String (value, 0) + " Hz" :
@@ -102,24 +102,25 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                                         text.dropLastCharacters (3).getFloatValue(); });
 
         auto qltyParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i), TRANS ("Quality"),
-                                                                    NormalisableRange<float> {0.1f, 10.0f, 1.0f},
+                                                                    NormalisableRange<float> {0.1f, 10.0f, 1.0f, std::log (0.5f) / std::log (0.9f / 9.9f)},
                                                                     defaults [i].quality,
-                                                                    TRANS ("Quality"),
+                                                                    String(),
                                                                     AudioProcessorParameter::genericParameter,
                                                                     [](float value, int) { return String (value, 1); },
                                                                     [](const String& text) { return text.getFloatValue(); });
 
         auto gainParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i), TRANS ("Gain"),
-                                                                    NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f},
+                                                                    NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f,
+                                                                        std::log (0.5f) / std::log ((1.0f - (1.0f / maxGain)) / (maxGain - (1.0f / maxGain)))},
                                                                     defaults [i].gain,
-                                                                    TRANS ("Band Gain"),
+                                                                    String(),
                                                                     AudioProcessorParameter::genericParameter,
                                                                     [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
                                                                     [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
 
         auto actvParameter = std::make_unique<AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i), TRANS ("Active"),
                                                                    defaults [i].active,
-                                                                   TRANS ("Band Active"),
+                                                                   String(),
                                                                    [](float value, int) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
                                                                    [](String text) {return text == TRANS ("active");});
 

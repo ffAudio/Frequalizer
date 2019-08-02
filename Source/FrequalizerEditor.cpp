@@ -326,17 +326,14 @@ FrequalizerAudioProcessorEditor::BandEditor::BandEditor (size_t i, FrequalizerAu
 
     addAndMakeVisible (frequency);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getFrequencyParamName (index), frequency));
-    frequency.setSkewFactorFromMidPoint (1000.0);
     frequency.setTooltip (TRANS ("Filter's frequency"));
 
     addAndMakeVisible (quality);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getQualityParamName (index), quality));
-    quality.setSkewFactorFromMidPoint (1.0);
     quality.setTooltip (TRANS ("Filter's steepness (Quality)"));
 
     addAndMakeVisible (gain);
     attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
-    gain.setSkewFactorFromMidPoint (1.0);
     gain.setTooltip (TRANS ("Filter's gain"));
 
     solo.setClickingTogglesState (true);
