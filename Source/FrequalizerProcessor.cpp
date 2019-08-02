@@ -84,12 +84,15 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 
     for (size_t i = 0; i < defaults.size(); ++i)
     {
+        auto prefix = "Q" + String (i + 1) + ": ";
+
         auto typeParameter = std::make_unique<AudioParameterChoice> (FrequalizerAudioProcessor::getTypeParamName (i),
-                                                                     TRANS ("Filter Type"),
+                                                                     prefix + TRANS ("Filter Type"),
                                                                      FrequalizerAudioProcessor::getFilterTypeNames(),
                                                                      defaults [i].type);
 
-        auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i), TRANS ("Frequency"),
+        auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i),
+                                                                    prefix + TRANS ("Frequency"),
                                                                     NormalisableRange<float> {20.0f, 20000.0f, 1.0f, std::log (0.5f) / std::log (980.0f / 19980.0f)},
                                                                     defaults [i].frequency,
                                                                     String(),
@@ -101,7 +104,8 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                                         text.dropLastCharacters (4).getFloatValue() * 1000.0 :
                                                                         text.dropLastCharacters (3).getFloatValue(); });
 
-        auto qltyParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i), TRANS ("Quality"),
+        auto qltyParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i),
+                                                                    prefix + TRANS ("Quality"),
                                                                     NormalisableRange<float> {0.1f, 10.0f, 1.0f, std::log (0.5f) / std::log (0.9f / 9.9f)},
                                                                     defaults [i].quality,
                                                                     String(),
@@ -109,7 +113,8 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                                     [](float value, int) { return String (value, 1); },
                                                                     [](const String& text) { return text.getFloatValue(); });
 
-        auto gainParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i), TRANS ("Gain"),
+        auto gainParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i),
+                                                                    prefix + TRANS ("Gain"),
                                                                     NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f,
                                                                         std::log (0.5f) / std::log ((1.0f - (1.0f / maxGain)) / (maxGain - (1.0f / maxGain)))},
                                                                     defaults [i].gain,
@@ -118,7 +123,8 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                                     [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
                                                                     [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
 
-        auto actvParameter = std::make_unique<AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i), TRANS ("Active"),
+        auto actvParameter = std::make_unique<AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i),
+                                                                   prefix + TRANS ("Active"),
                                                                    defaults [i].active,
                                                                    String(),
                                                                    [](float value, int) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
