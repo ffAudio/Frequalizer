@@ -102,8 +102,8 @@ public:
 
     bool checkForNewData()
     {
-        auto available = newDataAvailable;
-        newDataAvailable = false;
+        auto available = newDataAvailable.load();
+        newDataAvailable.store (false);
         return available;
     }
 
@@ -128,7 +128,7 @@ private:
     Type sampleRate {};
 
     dsp::FFT fft                           { 12 };
-    dsp::WindowingFunction<Type> windowing { size_t (fft.getSize()), dsp::WindowingFunction<Type>::kaiser, true, 4 };
+    dsp::WindowingFunction<Type> windowing { size_t (fft.getSize()), dsp::WindowingFunction<Type>::hann, true };
     AudioBuffer<float> fftBuffer           { 1, fft.getSize() * 2 };
 
     AudioBuffer<float> averager            { 5, fft.getSize() / 2 };
@@ -137,7 +137,7 @@ private:
     AbstractFifo abstractFifo              { 48000 };
     AudioBuffer<Type> audioFifo;
 
-    bool newDataAvailable = false;
+    std::atomic<bool> newDataAvailable;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Analyser)
 };
