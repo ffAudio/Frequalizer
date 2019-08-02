@@ -541,12 +541,12 @@ const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
 
 void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble)
 {
-    p.startNewSubPath (bounds.getX(), roundToInt (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2)));
+    p.startNewSubPath (bounds.getX(), mags [0] > 0 ? float (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2)) : bounds.getBottom());
     const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
     for (size_t i=1; i < frequencies.size(); ++i)
     {
-        p.lineTo (roundToInt (bounds.getX() + i * xFactor),
-                  roundToInt (bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2)));
+        p.lineTo (float (bounds.getX() + i * xFactor),
+                  float (mags [i] > 0 ? bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2) : bounds.getBottom()));
     }
 }
 
