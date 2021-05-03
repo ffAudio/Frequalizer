@@ -26,7 +26,7 @@ public:
         averager.clear();
     }
 
-    virtual ~Analyser() = default;
+    ~Analyser() override = default;
 
     void addAudioData (const AudioBuffer<Type>& buffer, int startChannel, int numChannels)
     {

@@ -59,9 +59,7 @@ public:
 
     }
 
-    ~SocialButtons()
-    {
-    }
+    ~SocialButtons() override = default;
 
     void paint (Graphics& g) override
     {

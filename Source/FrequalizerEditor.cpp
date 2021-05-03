@@ -16,15 +16,15 @@ static float maxDB       = 24.0f;
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
-  : AudioProcessorEditor (&p), processor (p),
+  : AudioProcessorEditor (&p), freqProcessor (p),
     output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
 {
     tooltipWindow->setMillisecondsBeforeTipAppears (1000);
 
     addAndMakeVisible (socialButtons);
 
-    for (size_t i=0; i < processor.getNumBands(); ++i) {
-        auto* bandEditor = bandEditors.add (new BandEditor (i, processor));
+    for (size_t i=0; i < freqProcessor.getNumBands(); ++i) {
+        auto* bandEditor = bandEditors.add (new BandEditor (i, freqProcessor));
         addAndMakeVisible (bandEditor);
     }
 
@@ -32,10 +32,10 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     frame.setTextLabelPosition (Justification::centred);
     addAndMakeVisible (frame);
     addAndMakeVisible (output);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
+    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (freqProcessor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
     output.setTooltip (TRANS ("Overall Gain"));
 
-    auto size = processor.getSavedSize();
+    auto size = freqProcessor.getSavedSize();
     setResizable (true, true);
     setSize (size.x, size.y);
     setResizeLimits (800, 450, 2990, 1800);
@@ -46,7 +46,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     openGLContext.attachTo (*getTopLevelComponent());
 #endif
 
-    processor.addChangeListener (this);
+    freqProcessor.addChangeListener (this);
 
     startTimerHz (30);
 }
@@ -55,7 +55,7 @@ FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 {
     PopupMenu::dismissAllActiveMenus();
 
-    processor.removeChangeListener (this);
+    freqProcessor.removeChangeListener (this);
 #ifdef JUCE_OPENGL
     openGLContext.detach();
 #endif
@@ -101,18 +101,18 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     g.reduceClipRegion (plotFrame);
 
     g.setFont (16.0f);
-    processor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, true);
+    freqProcessor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, true);
     g.setColour (inputColour);
     g.drawFittedText ("Input", plotFrame.reduced (8), Justification::topRight, 1);
     g.strokePath (analyserPath, PathStrokeType (1.0));
-    processor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, false);
+    freqProcessor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, false);
     g.setColour (outputColour);
     g.drawFittedText ("Output", plotFrame.reduced (8, 28), Justification::topRight, 1);
     g.strokePath (analyserPath, PathStrokeType (1.0));
 
-    for (size_t i=0; i < processor.getNumBands(); ++i) {
+    for (size_t i=0; i < freqProcessor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (int (i));
-        auto* band = processor.getBand (i);
+        auto* band = freqProcessor.getBand (i);
 
         g.setColour (band->active ? band->colour : band->colour.withAlpha (0.3f));
         g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
@@ -129,7 +129,7 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
 
 void FrequalizerAudioProcessorEditor::resized()
 {
-    processor.setSavedSize ({ getWidth(), getHeight() });
+    freqProcessor.setSavedSize ({ getWidth(), getHeight() });
     plotFrame = getLocalBounds().reduced (3, 3);
 
     socialButtons.setBounds (plotFrame.removeFromBottom (35));
@@ -157,7 +157,7 @@ void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster*
 
 void FrequalizerAudioProcessorEditor::timerCallback()
 {
-    if (processor.checkForNewAnalyserData())
+    if (freqProcessor.checkForNewAnalyserData())
         repaint (plotFrame);
 }
 
@@ -168,7 +168,7 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
 
     for (int i=0; i < bandEditors.size(); ++i)
     {
-        if (auto* band = processor.getBand (size_t (i)))
+        if (auto* band = freqProcessor.getBand (size_t (i)))
         {
             if (std::abs (plotFrame.getX() + getPositionForFrequency (float (int (band->frequency)) * plotFrame.getWidth())
                           - e.position.getX()) < clickRadius)
@@ -198,7 +198,7 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
     {
         for (int i=0; i < bandEditors.size(); ++i)
         {
-            if (auto* band = processor.getBand (size_t (i)))
+            if (auto* band = freqProcessor.getBand (size_t (i)))
             {
                 auto pos = plotFrame.getX() + getPositionForFrequency (float (band->frequency)) * plotFrame.getWidth();
 
@@ -207,7 +207,7 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
                     if (std::abs (getPositionForGain (float (band->gain), float (plotFrame.getY()), float (plotFrame.getBottom()))
                                   - e.position.getY()) < clickRadius)
                     {
-                        draggingGain = processor.getPluginState().getParameter (processor.getGainParamName (size_t (i)));
+                        draggingGain = freqProcessor.getPluginState().getParameter (freqProcessor.getGainParamName (size_t (i)));
                         setMouseCursor (MouseCursor (MouseCursor::UpDownLeftRightResizeCursor));
                     }
                     else
@@ -248,12 +248,12 @@ void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
     {
         for (size_t i=0; i < size_t (bandEditors.size()); ++i)
         {
-            if (auto* band = processor.getBand (i))
+            if (auto* band = freqProcessor.getBand (i))
             {
                 if (std::abs (plotFrame.getX() + getPositionForFrequency (float (band->frequency)) * plotFrame.getWidth()
                               - e.position.getX()) < clickRadius)
                 {
-                    if (auto* param = processor.getPluginState().getParameter (processor.getActiveParamName (i)))
+                    if (auto* param = freqProcessor.getPluginState().getParameter (freqProcessor.getActiveParamName (i)))
                         param->setValueNotifyingHost (param->getValue() < 0.5f ? 1.0f : 0.0f);
                 }
             }
@@ -269,16 +269,16 @@ void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
     {
         auto* bandEditor = bandEditors.getUnchecked (i);
 
-        if (auto* band = processor.getBand (size_t (i)))
+        if (auto* band = freqProcessor.getBand (size_t (i)))
         {
             bandEditor->updateControls (band->type);
             bandEditor->frequencyResponse.clear();
-            processor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1), pixelsPerDouble);
+            freqProcessor.createFrequencyPlot (bandEditor->frequencyResponse, band->magnitudes, plotFrame.withX (plotFrame.getX() + 1), pixelsPerDouble);
         }
-        bandEditor->updateSoloState (processor.getBandSolo (i));
+        bandEditor->updateSoloState (freqProcessor.getBandSolo (i));
     }
     frequencyResponse.clear();
-    processor.createFrequencyPlot (frequencyResponse, processor.getMagnitudes(), plotFrame, pixelsPerDouble);
+    freqProcessor.createFrequencyPlot (frequencyResponse, freqProcessor.getMagnitudes(), plotFrame, pixelsPerDouble);
 }
 
 float FrequalizerAudioProcessorEditor::getPositionForFrequency (float freq)
@@ -405,6 +405,7 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
         case FrequalizerAudioProcessor::HighPass:
             frequency.setEnabled (true); quality.setEnabled (true); gain.setEnabled (false);
             break;
+        case FrequalizerAudioProcessor::LastFilterID:
         default:
             frequency.setEnabled (true);
             quality.setEnabled (true);
