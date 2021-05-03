@@ -80,7 +80,7 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     for (int i=0; i < 10; ++i) {
         g.setColour (Colours::silver.withAlpha (0.3f));
         auto x = plotFrame.getX() + plotFrame.getWidth() * i * 0.1f;
-        if (i > 0) g.drawVerticalLine (roundToInt (x), plotFrame.getY(), plotFrame.getBottom());
+        if (i > 0) g.drawVerticalLine (roundToInt (x), float (plotFrame.getY()), float (plotFrame.getBottom()));
 
         g.setColour (Colours::silver);
         auto freq = getFrequencyForPosition (i * 0.1f);
@@ -89,8 +89,8 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
     }
 
     g.setColour (Colours::silver.withAlpha (0.3f));
-    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.25 * plotFrame.getHeight()), plotFrame.getX(), plotFrame.getRight());
-    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.75 * plotFrame.getHeight()), plotFrame.getX(), plotFrame.getRight());
+    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.25 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
+    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.75 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
 
     g.setColour (Colours::silver);
     g.drawFittedText (String (maxDB) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
@@ -118,13 +118,13 @@ void FrequalizerAudioProcessorEditor::paint (Graphics& g)
         g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
         g.setColour (draggingBand == int (i) ? band->colour : band->colour.withAlpha (0.3f));
         auto x = roundToInt (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency (float (band->frequency)));
-        auto y = roundToInt (getPositionForGain (float (band->gain), plotFrame.getY(), plotFrame.getBottom()));
-        g.drawVerticalLine (x, plotFrame.getY(), y - 5);
-        g.drawVerticalLine (x, y + 5, plotFrame.getBottom());
-        g.fillEllipse (x - 3, y - 3, 6, 6);
+        auto y = roundToInt (getPositionForGain (float (band->gain), float (plotFrame.getY()), float (plotFrame.getBottom())));
+        g.drawVerticalLine (x, float (plotFrame.getY()), float (y - 5));
+        g.drawVerticalLine (x, float (y + 5), float (plotFrame.getBottom()));
+        g.fillEllipse (float (x - 3), float (y - 3), 6.0f, 6.0f);
     }
     g.setColour (Colours::silver);
-    g.strokePath (frequencyResponse, PathStrokeType (1.0));
+    g.strokePath (frequencyResponse, PathStrokeType (1.0f));
 }
 
 void FrequalizerAudioProcessorEditor::resized()
@@ -170,7 +170,7 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
     {
         if (auto* band = processor.getBand (size_t (i)))
         {
-            if (std::abs (plotFrame.getX() + getPositionForFrequency (int (band->frequency)) * plotFrame.getWidth()
+            if (std::abs (plotFrame.getX() + getPositionForFrequency (float (int (band->frequency)) * plotFrame.getWidth())
                           - e.position.getX()) < clickRadius)
             {
                 contextMenu.clear();
@@ -204,7 +204,7 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
 
                 if (std::abs (pos - e.position.getX()) < clickRadius)
                 {
-                    if (std::abs (getPositionForGain (float (band->gain), plotFrame.getY(), plotFrame.getBottom())
+                    if (std::abs (getPositionForGain (float (band->gain), float (plotFrame.getY()), float (plotFrame.getBottom()))
                                   - e.position.getY()) < clickRadius)
                     {
                         draggingGain = processor.getPluginState().getParameter (processor.getGainParamName (size_t (i)));
@@ -238,7 +238,7 @@ void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
         auto pos = (e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
         bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
         if (draggingGain)
-            bandEditors [draggingBand]->setGain (getGainForPosition (e.position.getY(), plotFrame.getY(), plotFrame.getBottom()));
+            bandEditors [draggingBand]->setGain (getGainForPosition (e.position.getY(), float (plotFrame.getY()), float (plotFrame.getBottom())));
     }
 }
 

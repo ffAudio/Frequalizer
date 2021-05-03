@@ -99,7 +99,7 @@ public:
 
         p.startNewSubPath (bounds.getX() + factor * indexToX (0, minFreq), binToY (fftData [0], bounds));
         for (int i = 0; i < averager.getNumSamples(); ++i)
-            p.lineTo (bounds.getX() + factor * indexToX (i, minFreq), binToY (fftData [i], bounds));
+            p.lineTo (bounds.getX() + factor * indexToX (float (i), minFreq), binToY (fftData [i], bounds));
     }
 
     bool checkForNewData()

@@ -548,12 +548,12 @@ const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
 
 void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble)
 {
-    p.startNewSubPath (bounds.getX(), mags [0] > 0 ? float (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2)) : bounds.getBottom());
-    const double xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
+    p.startNewSubPath (float (bounds.getX()), mags [0] > 0 ? float (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2.0)) : bounds.getBottom());
+    const auto xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
     for (size_t i=1; i < frequencies.size(); ++i)
     {
         p.lineTo (float (bounds.getX() + i * xFactor),
-                  float (mags [i] > 0 ? bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2) : bounds.getBottom()));
+                  float (mags [i] > 0 ? bounds.getCentreY() - pixelsPerDouble * std::log (mags [i]) / std::log (2.0) : bounds.getBottom()));
     }
 }
 
@@ -592,8 +592,8 @@ void FrequalizerAudioProcessor::setStateInformation (const void* data, int sizeI
         {
             editorSize.setX (editor.getProperty (IDs::sizeX, 900));
             editorSize.setY (editor.getProperty (IDs::sizeY, 500));
-            if (auto* activeEditor = getActiveEditor())
-                activeEditor->setSize (editorSize.x, editorSize.y);
+            if (auto* thisEditor = getActiveEditor())
+                thisEditor->setSize (editorSize.x, editorSize.y);
         }
     }
 }
