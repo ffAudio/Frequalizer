@@ -12,21 +12,21 @@
 #include "FrequalizerEditor.h"
 
 
-String FrequalizerAudioProcessor::paramOutput   ("output");
-String FrequalizerAudioProcessor::paramType     ("type");
-String FrequalizerAudioProcessor::paramFrequency("frequency");
-String FrequalizerAudioProcessor::paramQuality  ("quality");
-String FrequalizerAudioProcessor::paramGain     ("gain");
-String FrequalizerAudioProcessor::paramActive   ("active");
+juce::String FrequalizerAudioProcessor::paramOutput   ("output");
+juce::String FrequalizerAudioProcessor::paramType     ("type");
+juce::String FrequalizerAudioProcessor::paramFrequency("frequency");
+juce::String FrequalizerAudioProcessor::paramQuality  ("quality");
+juce::String FrequalizerAudioProcessor::paramGain     ("gain");
+juce::String FrequalizerAudioProcessor::paramActive   ("active");
 
 namespace IDs
 {
-    String editor {"editor"};
-    String sizeX  {"size-x"};
-    String sizeY  {"size-y"};
+    juce::String editor {"editor"};
+    juce::String sizeX  {"size-x"};
+    juce::String sizeY  {"size-y"};
 }
 
-String FrequalizerAudioProcessor::getBandID (size_t index)
+juce::String FrequalizerAudioProcessor::getBandID (size_t index)
 {
     switch (index)
     {
@@ -41,7 +41,7 @@ String FrequalizerAudioProcessor::getBandID (size_t index)
     return "unknown";
 }
 
-int FrequalizerAudioProcessor::getBandIndexFromID (String paramID)
+int FrequalizerAudioProcessor::getBandIndexFromID (juce::String paramID)
 {
     for (size_t i=0; i < 6; ++i)
         if (paramID.startsWith (getBandID (i) + "-"))
@@ -53,84 +53,84 @@ int FrequalizerAudioProcessor::getBandIndexFromID (String paramID)
 std::vector<FrequalizerAudioProcessor::Band> createDefaultBands()
 {
     std::vector<FrequalizerAudioProcessor::Band> defaults;
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Lowest"),    Colours::blue,   FrequalizerAudioProcessor::HighPass,    20.0f, 0.707f));
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Low"),       Colours::brown,  FrequalizerAudioProcessor::LowShelf,   250.0f, 0.707f));
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Low Mids"),  Colours::green,  FrequalizerAudioProcessor::Peak,       500.0f, 0.707f));
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("High Mids"), Colours::coral,  FrequalizerAudioProcessor::Peak,      1000.0f, 0.707f));
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("High"),      Colours::orange, FrequalizerAudioProcessor::HighShelf, 5000.0f, 0.707f));
-    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Highest"),   Colours::red,    FrequalizerAudioProcessor::LowPass,  12000.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Lowest"),    juce::Colours::blue,   FrequalizerAudioProcessor::HighPass,    20.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Low"),       juce::Colours::brown,  FrequalizerAudioProcessor::LowShelf,   250.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Low Mids"),  juce::Colours::green,  FrequalizerAudioProcessor::Peak,       500.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("High Mids"), juce::Colours::coral,  FrequalizerAudioProcessor::Peak,      1000.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("High"),      juce::Colours::orange, FrequalizerAudioProcessor::HighShelf, 5000.0f, 0.707f));
+    defaults.push_back (FrequalizerAudioProcessor::Band (TRANS ("Highest"),   juce::Colours::red,    FrequalizerAudioProcessor::LowPass,  12000.0f, 0.707f));
     return defaults;
 }
 
-AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 {
-    std::vector<std::unique_ptr<AudioProcessorParameterGroup>> params;
+    std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> params;
 
     // setting defaults
-    const float maxGain = Decibels::decibelsToGain (24.0f);
+    const float maxGain = juce::Decibels::decibelsToGain (24.0f);
     auto defaults = createDefaultBands();
 
     {
-        auto param = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::paramOutput, TRANS ("Output"),
-                                                            NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
+        auto param = std::make_unique<juce::AudioParameterFloat> (FrequalizerAudioProcessor::paramOutput, TRANS ("Output"),
+                                                            juce::NormalisableRange<float> (0.0f, 2.0f, 0.01f), 1.0f,
                                                             TRANS ("Output level"),
-                                                            AudioProcessorParameter::genericParameter,
-                                                            [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
-                                                            [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
+                                                            juce::AudioProcessorParameter::genericParameter,
+                                                            [](float value, int) {return juce::String (juce::Decibels::gainToDecibels(value), 1) + " dB";},
+                                                            [](juce::String text) {return juce::Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
 
-        auto group = std::make_unique<AudioProcessorParameterGroup> ("global", TRANS ("Globals"), "|", std::move (param));
+        auto group = std::make_unique<juce::AudioProcessorParameterGroup> ("global", TRANS ("Globals"), "|", std::move (param));
         params.push_back (std::move (group));
     }
 
     for (size_t i = 0; i < defaults.size(); ++i)
     {
-        auto prefix = "Q" + String (i + 1) + ": ";
+        auto prefix = "Q" + juce::String (i + 1) + ": ";
 
-        auto typeParameter = std::make_unique<AudioParameterChoice> (FrequalizerAudioProcessor::getTypeParamName (i),
+        auto typeParameter = std::make_unique<juce::AudioParameterChoice> (FrequalizerAudioProcessor::getTypeParamName (i),
                                                                      prefix + TRANS ("Filter Type"),
                                                                      FrequalizerAudioProcessor::getFilterTypeNames(),
                                                                      defaults [i].type);
 
-        auto freqParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i),
+        auto freqParameter = std::make_unique<juce::AudioParameterFloat> (FrequalizerAudioProcessor::getFrequencyParamName (i),
                                                                     prefix + TRANS ("Frequency"),
-                                                                    NormalisableRange<float> {20.0f, 20000.0f, 1.0f, std::log (0.5f) / std::log (980.0f / 19980.0f)},
+                                                                    juce::NormalisableRange<float> {20.0f, 20000.0f, 1.0f, std::log (0.5f) / std::log (980.0f / 19980.0f)},
                                                                     defaults [i].frequency,
-                                                                    String(),
-                                                                    AudioProcessorParameter::genericParameter,
+                                                                    juce::String(),
+                                                                    juce::AudioProcessorParameter::genericParameter,
                                                                     [](float value, int) { return (value < 1000.0f) ?
-                                                                        String (value, 0) + " Hz" :
-                                                                        String (value / 1000.0f, 2) + " kHz"; },
-                                                                    [](String text) { return text.endsWith(" kHz") ?
+                                                                        juce::String (value, 0) + " Hz" :
+                                                                        juce::String (value / 1000.0f, 2) + " kHz"; },
+                                                                    [](juce::String text) { return text.endsWith(" kHz") ?
                                                                         text.dropLastCharacters (4).getFloatValue() * 1000.0f :
                                                                         text.dropLastCharacters (3).getFloatValue(); });
 
-        auto qltyParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i),
+        auto qltyParameter = std::make_unique<juce::AudioParameterFloat> (FrequalizerAudioProcessor::getQualityParamName (i),
                                                                     prefix + TRANS ("Quality"),
-                                                                    NormalisableRange<float> {0.1f, 10.0f, 1.0f, std::log (0.5f) / std::log (0.9f / 9.9f)},
+                                                                    juce::NormalisableRange<float> {0.1f, 10.0f, 1.0f, std::log (0.5f) / std::log (0.9f / 9.9f)},
                                                                     defaults [i].quality,
-                                                                    String(),
-                                                                    AudioProcessorParameter::genericParameter,
-                                                                    [](float value, int) { return String (value, 1); },
-                                                                    [](const String& text) { return text.getFloatValue(); });
+                                                                    juce::String(),
+                                                                    juce::AudioProcessorParameter::genericParameter,
+                                                                    [](float value, int) { return juce::String (value, 1); },
+                                                                    [](const juce::String& text) { return text.getFloatValue(); });
 
-        auto gainParameter = std::make_unique<AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i),
+        auto gainParameter = std::make_unique<juce::AudioParameterFloat> (FrequalizerAudioProcessor::getGainParamName (i),
                                                                     prefix + TRANS ("Gain"),
-                                                                    NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f,
+                                                                    juce::NormalisableRange<float> {1.0f / maxGain, maxGain, 0.001f,
                                                                         std::log (0.5f) / std::log ((1.0f - (1.0f / maxGain)) / (maxGain - (1.0f / maxGain)))},
                                                                     defaults [i].gain,
-                                                                    String(),
-                                                                    AudioProcessorParameter::genericParameter,
-                                                                    [](float value, int) {return String (Decibels::gainToDecibels(value), 1) + " dB";},
-                                                                    [](String text) {return Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
+                                                                    juce::String(),
+                                                                    juce::AudioProcessorParameter::genericParameter,
+                                                                    [](float value, int) {return juce::String (juce::Decibels::gainToDecibels(value), 1) + " dB";},
+                                                                    [](juce::String text) {return juce::Decibels::decibelsToGain (text.dropLastCharacters (3).getFloatValue());});
 
-        auto actvParameter = std::make_unique<AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i),
+        auto actvParameter = std::make_unique<juce::AudioParameterBool> (FrequalizerAudioProcessor::getActiveParamName (i),
                                                                    prefix + TRANS ("Active"),
                                                                    defaults [i].active,
-                                                                   String(),
+                                                                   juce::String(),
                                                                    [](float value, int) {return value > 0.5f ? TRANS ("active") : TRANS ("bypassed");},
-                                                                   [](String text) {return text == TRANS ("active");});
+                                                                   [](juce::String text) {return text == TRANS ("active");});
 
-        auto group = std::make_unique<AudioProcessorParameterGroup> ("band" + String (i), defaults [i].name, "|",
+        auto group = std::make_unique<juce::AudioProcessorParameterGroup> ("band" + juce::String (i), defaults [i].name, "|",
                                                                      std::move (typeParameter),
                                                                      std::move (freqParameter),
                                                                      std::move (qltyParameter),
@@ -147,8 +147,8 @@ AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 FrequalizerAudioProcessor::FrequalizerAudioProcessor() :
 #ifndef JucePlugin_PreferredChannelConfigurations
     AudioProcessor (BusesProperties()
-                    .withInput  ("Input",  AudioChannelSet::stereo(), true)
-                    .withOutput ("Output", AudioChannelSet::stereo(), true)
+                    .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                    .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                     ),
 #endif
 state (*this, &undo, "PARAMS", createParameterLayout())
@@ -175,7 +175,7 @@ state (*this, &undo, "PARAMS", createParameterLayout())
 
     state.addParameterListener (paramOutput, this);
 
-    state.state = ValueTree (JucePlugin_Name);
+    state.state = juce::ValueTree (JucePlugin_Name);
 }
 
 FrequalizerAudioProcessor::~FrequalizerAudioProcessor()
@@ -185,7 +185,7 @@ FrequalizerAudioProcessor::~FrequalizerAudioProcessor()
 }
 
 //==============================================================================
-const String FrequalizerAudioProcessor::getName() const
+const juce::String FrequalizerAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
@@ -233,12 +233,12 @@ void FrequalizerAudioProcessor::setCurrentProgram (int)
 {
 }
 
-const String FrequalizerAudioProcessor::getProgramName (int)
+const juce::String FrequalizerAudioProcessor::getProgramName (int)
 {
     return {};
 }
 
-void FrequalizerAudioProcessor::changeProgramName (int, const String&)
+void FrequalizerAudioProcessor::changeProgramName (int, const juce::String&)
 {
 }
 
@@ -247,10 +247,10 @@ void FrequalizerAudioProcessor::prepareToPlay (double newSampleRate, int newSamp
 {
     sampleRate = newSampleRate;
 
-    dsp::ProcessSpec spec;
+    juce::dsp::ProcessSpec spec;
     spec.sampleRate = newSampleRate;
-    spec.maximumBlockSize = uint32 (newSamplesPerBlock);
-    spec.numChannels = uint32 (getTotalNumOutputChannels ());
+    spec.maximumBlockSize = juce::uint32 (newSamplesPerBlock);
+    spec.numChannels = juce::uint32 (getTotalNumOutputChannels ());
 
     for (size_t i=0; i < bands.size(); ++i) {
         updateBand (i);
@@ -282,10 +282,10 @@ bool FrequalizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 }
 #endif
 
-void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void FrequalizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
-    ignoreUnused (midiMessages);
+    juce::ScopedNoDenormals noDenormals;
+    juce::ignoreUnused (midiMessages);
 
     if (getActiveEditor() != nullptr)
         inputAnalyser.addAudioData (buffer, 0, getTotalNumInputChannels());
@@ -294,45 +294,45 @@ void FrequalizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
         filter.reset();
         wasBypassed = false;
     }
-    dsp::AudioBlock<float>              ioBuffer (buffer);
-    dsp::ProcessContextReplacing<float> context  (ioBuffer);
+    juce::dsp::AudioBlock<float>              ioBuffer (buffer);
+    juce::dsp::ProcessContextReplacing<float> context  (ioBuffer);
     filter.process (context);
 
     if (getActiveEditor() != nullptr)
         outputAnalyser.addAudioData (buffer, 0, getTotalNumOutputChannels());
 }
 
-AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
+juce::AudioProcessorValueTreeState& FrequalizerAudioProcessor::getPluginState()
 {
     return state;
 }
 
-String FrequalizerAudioProcessor::getTypeParamName (size_t index)
+juce::String FrequalizerAudioProcessor::getTypeParamName (size_t index)
 {
     return getBandID (index) + "-" + paramType;
 }
 
-String FrequalizerAudioProcessor::getFrequencyParamName (size_t index)
+juce::String FrequalizerAudioProcessor::getFrequencyParamName (size_t index)
 {
     return getBandID (index) + "-" + paramFrequency;
 }
 
-String FrequalizerAudioProcessor::getQualityParamName (size_t index)
+juce::String FrequalizerAudioProcessor::getQualityParamName (size_t index)
 {
     return getBandID (index) + "-" + paramQuality;
 }
 
-String FrequalizerAudioProcessor::getGainParamName (size_t index)
+juce::String FrequalizerAudioProcessor::getGainParamName (size_t index)
 {
     return getBandID (index) + "-" + paramGain;
 }
 
-String FrequalizerAudioProcessor::getActiveParamName (size_t index)
+juce::String FrequalizerAudioProcessor::getActiveParamName (size_t index)
 {
     return getBandID (index) + "-" + paramActive;
 }
 
-void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float newValue)
+void FrequalizerAudioProcessor::parameterChanged (const juce::String& parameter, float newValue)
 {
     if (parameter == paramOutput) {
         filter.get<6>().setGainLinear (newValue);
@@ -341,7 +341,7 @@ void FrequalizerAudioProcessor::parameterChanged (const String& parameter, float
     }
 
     int index = getBandIndexFromID (parameter);
-    if (isPositiveAndBelow (index, bands.size()))
+    if (juce::isPositiveAndBelow (index, bands.size()))
     {
         auto* band = getBand (size_t (index));
         if (parameter.endsWith (paramType)) {
@@ -369,17 +369,17 @@ size_t FrequalizerAudioProcessor::getNumBands () const
     return bands.size();
 }
 
-String FrequalizerAudioProcessor::getBandName   (size_t index) const
+juce::String FrequalizerAudioProcessor::getBandName   (size_t index) const
 {
-    if (isPositiveAndBelow (index, bands.size()))
+    if (juce::isPositiveAndBelow (index, bands.size()))
         return bands [size_t (index)].name;
     return TRANS ("unknown");
 }
-Colour FrequalizerAudioProcessor::getBandColour (size_t index) const
+juce::Colour FrequalizerAudioProcessor::getBandColour (size_t index) const
 {
-    if (isPositiveAndBelow (index, bands.size()))
+    if (juce::isPositiveAndBelow (index, bands.size()))
         return bands [size_t (index)].colour;
-    return Colours::silver;
+    return juce::Colours::silver;
 }
 
 bool FrequalizerAudioProcessor::getBandSolo (int index) const
@@ -395,7 +395,7 @@ void FrequalizerAudioProcessor::setBandSolo (int index)
 
 void FrequalizerAudioProcessor::updateBypassedStates ()
 {
-    if (isPositiveAndBelow (soloed, bands.size())) {
+    if (juce::isPositiveAndBelow (soloed, bands.size())) {
         filter.setBypassed<0>(soloed != 0);
         filter.setBypassed<1>(soloed != 1);
         filter.setBypassed<2>(soloed != 2);
@@ -416,12 +416,12 @@ void FrequalizerAudioProcessor::updateBypassedStates ()
 
 FrequalizerAudioProcessor::Band* FrequalizerAudioProcessor::getBand (size_t index)
 {
-    if (isPositiveAndBelow (index, bands.size()))
+    if (juce::isPositiveAndBelow (index, bands.size()))
         return &bands [index];
     return nullptr;
 }
 
-StringArray FrequalizerAudioProcessor::getFilterTypeNames()
+juce::StringArray FrequalizerAudioProcessor::getFilterTypeNames()
 {
     return {
         TRANS ("No Filter"),
@@ -442,43 +442,43 @@ StringArray FrequalizerAudioProcessor::getFilterTypeNames()
 void FrequalizerAudioProcessor::updateBand (const size_t index)
 {
     if (sampleRate > 0) {
-        dsp::IIR::Coefficients<float>::Ptr newCoefficients;
+        juce::dsp::IIR::Coefficients<float>::Ptr newCoefficients;
         switch (bands [index].type) {
             case NoFilter:
-                newCoefficients = new dsp::IIR::Coefficients<float> (1, 0, 1, 0);
+                newCoefficients = new juce::dsp::IIR::Coefficients<float> (1, 0, 1, 0);
                 break;
             case LowPass:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, bands [index].frequency, bands [index].quality);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case LowPass1st:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, bands [index].frequency);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, bands [index].frequency);
                 break;
             case LowShelf:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeLowShelf (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
                 break;
             case BandPass:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeBandPass (sampleRate, bands [index].frequency, bands [index].quality);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case AllPass:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeAllPass (sampleRate, bands [index].frequency, bands [index].quality);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeAllPass (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case AllPass1st:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeFirstOrderAllPass (sampleRate, bands [index].frequency);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeFirstOrderAllPass (sampleRate, bands [index].frequency);
                 break;
             case Notch:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeNotch (sampleRate, bands [index].frequency, bands [index].quality);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeNotch (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case Peak:
-                newCoefficients = dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
                 break;
             case HighShelf:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeHighShelf (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeHighShelf (sampleRate, bands [index].frequency, bands [index].quality, bands [index].gain);
                 break;
             case HighPass1st:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeFirstOrderHighPass (sampleRate, bands [index].frequency);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass (sampleRate, bands [index].frequency);
                 break;
             case HighPass:
-                newCoefficients = dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, bands [index].frequency, bands [index].quality);
+                newCoefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, bands [index].frequency, bands [index].quality);
                 break;
             case LastFilterID:
             default:
@@ -489,7 +489,7 @@ void FrequalizerAudioProcessor::updateBand (const size_t index)
         {
             {
                 // minimise lock scope, get<0>() needs to be a  compile time constant
-                ScopedLock processLock (getCallbackLock());
+                juce::ScopedLock processLock (getCallbackLock());
                 if (index == 0)
                     *filter.get<0>().state = *newCoefficients;
                 else if (index == 1)
@@ -518,14 +518,14 @@ void FrequalizerAudioProcessor::updatePlots ()
     auto gain = filter.get<6>().getGainLinear();
     std::fill (magnitudes.begin(), magnitudes.end(), gain);
 
-    if (isPositiveAndBelow (soloed, bands.size())) {
-        FloatVectorOperations::multiply (magnitudes.data(), bands [size_t (soloed)].magnitudes.data(), static_cast<int> (magnitudes.size()));
+    if (juce::isPositiveAndBelow (soloed, bands.size())) {
+        juce::FloatVectorOperations::multiply (magnitudes.data(), bands [size_t (soloed)].magnitudes.data(), static_cast<int> (magnitudes.size()));
     }
     else
     {
         for (size_t i=0; i < bands.size(); ++i)
             if (bands[i].active)
-                FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
+                juce::FloatVectorOperations::multiply (magnitudes.data(), bands [i].magnitudes.data(), static_cast<int> (magnitudes.size()));
     }
 
     sendChangeMessage();
@@ -537,7 +537,7 @@ bool FrequalizerAudioProcessor::hasEditor() const
     return true;
 }
 
-AudioProcessorEditor* FrequalizerAudioProcessor::createEditor()
+juce::AudioProcessorEditor* FrequalizerAudioProcessor::createEditor()
 {
     return new FrequalizerAudioProcessorEditor (*this);
 }
@@ -547,7 +547,7 @@ const std::vector<double>& FrequalizerAudioProcessor::getMagnitudes ()
     return magnitudes;
 }
 
-void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<double>& mags, const Rectangle<int> bounds, float pixelsPerDouble)
+void FrequalizerAudioProcessor::createFrequencyPlot (juce::Path& p, const std::vector<double>& mags, const juce::Rectangle<int> bounds, float pixelsPerDouble)
 {
     p.startNewSubPath (float (bounds.getX()), mags [0] > 0 ? float (bounds.getCentreY() - pixelsPerDouble * std::log (mags [0]) / std::log (2.0)) : bounds.getBottom());
     const auto xFactor = static_cast<double> (bounds.getWidth()) / frequencies.size();
@@ -558,7 +558,7 @@ void FrequalizerAudioProcessor::createFrequencyPlot (Path& p, const std::vector<
     }
 }
 
-void FrequalizerAudioProcessor::createAnalyserPlot (Path& p, const Rectangle<int> bounds, float minFreq, bool input)
+void FrequalizerAudioProcessor::createAnalyserPlot (juce::Path& p, const juce::Rectangle<int> bounds, float minFreq, bool input)
 {
     if (input)
         inputAnalyser.createPath (p, bounds.toFloat(), minFreq);
@@ -572,19 +572,19 @@ bool FrequalizerAudioProcessor::checkForNewAnalyserData()
 }
 
 //==============================================================================
-void FrequalizerAudioProcessor::getStateInformation (MemoryBlock& destData)
+void FrequalizerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto editor = state.state.getOrCreateChildWithName (IDs::editor, nullptr);
     editor.setProperty (IDs::sizeX, editorSize.x, nullptr);
     editor.setProperty (IDs::sizeY, editorSize.y, nullptr);
 
-    MemoryOutputStream stream(destData, false);
+    juce::MemoryOutputStream stream(destData, false);
     state.state.writeToStream (stream);
 }
 
 void FrequalizerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ValueTree tree = ValueTree::readFromData (data, size_t (sizeInBytes));
+    auto tree = juce::ValueTree::readFromData (data, size_t (sizeInBytes));
     if (tree.isValid()) {
         state.state = tree;
 
@@ -599,19 +599,19 @@ void FrequalizerAudioProcessor::setStateInformation (const void* data, int sizeI
     }
 }
 
-Point<int> FrequalizerAudioProcessor::getSavedSize() const
+juce::Point<int> FrequalizerAudioProcessor::getSavedSize() const
 {
     return editorSize;
 }
 
-void FrequalizerAudioProcessor::setSavedSize (const Point<int>& size)
+void FrequalizerAudioProcessor::setSavedSize (const juce::Point<int>& size)
 {
     editorSize = size;
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new FrequalizerAudioProcessor();
 }

@@ -12,23 +12,22 @@
 
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_basics/juce_gui_basics.h>
-using namespace juce;
 
 //==============================================================================
 /*
 */
 template<typename Type>
-class Analyser : public Thread
+class Analyser : public juce::Thread
 {
 public:
-    Analyser() : Thread ("Frequaliser-Analyser")
+    Analyser() : juce::Thread ("Frequaliser-Analyser")
     {
         averager.clear();
     }
 
     ~Analyser() override = default;
 
-    void addAudioData (const AudioBuffer<Type>& buffer, int startChannel, int numChannels)
+    void addAudioData (const juce::AudioBuffer<Type>& buffer, int startChannel, int numChannels)
     {
         if (abstractFifo.getFreeSpace() < buffer.getNumSamples())
             return;
@@ -74,7 +73,7 @@ public:
                 windowing.multiplyWithWindowingTable (fftBuffer.getWritePointer (0), size_t (fft.getSize()));
                 fft.performFrequencyOnlyForwardTransform (fftBuffer.getWritePointer (0));
 
-                ScopedLock lockedForWriting (pathCreationLock);
+                juce::ScopedLock lockedForWriting (pathCreationLock);
                 averager.addFrom (0, 0, averager.getReadPointer (averagerPtr), averager.getNumSamples(), -1.0f);
                 averager.copyFrom (averagerPtr, 0, fftBuffer.getReadPointer (0), averager.getNumSamples(), 1.0f / (averager.getNumSamples() * (averager.getNumChannels() - 1)));
                 averager.addFrom (0, 0, averager.getReadPointer (averagerPtr), averager.getNumSamples());
@@ -88,12 +87,12 @@ public:
         }
     }
 
-    void createPath (Path& p, const Rectangle<float> bounds, float minFreq)
+    void createPath (juce::Path& p, const juce::Rectangle<float> bounds, float minFreq)
     {
         p.clear();
         p.preallocateSpace (8 + averager.getNumSamples() * 3);
 
-        ScopedLock lockedForReading (pathCreationLock);
+        juce::ScopedLock lockedForReading (pathCreationLock);
         const auto* fftData = averager.getReadPointer (0);
         const auto  factor  = bounds.getWidth() / 10.0f;
 
@@ -117,27 +116,27 @@ private:
         return (freq > 0.01f) ? std::log (freq / minFreq) / std::log (2.0f) : 0.0f;
     }
 
-    inline float binToY (float bin, const Rectangle<float> bounds) const
+    inline float binToY (float bin, const juce::Rectangle<float> bounds) const
     {
         const float infinity = -80.0f;
-        return jmap (Decibels::gainToDecibels (bin, infinity),
-                     infinity, 0.0f, bounds.getBottom(), bounds.getY());
+        return juce::jmap (juce::Decibels::gainToDecibels (bin, infinity),
+                           infinity, 0.0f, bounds.getBottom(), bounds.getY());
     }
 
-    WaitableEvent waitForData;
-    CriticalSection pathCreationLock;
+    juce::WaitableEvent waitForData;
+    juce::CriticalSection pathCreationLock;
 
     Type sampleRate {};
 
-    dsp::FFT fft                           { 12 };
-    dsp::WindowingFunction<Type> windowing { size_t (fft.getSize()), dsp::WindowingFunction<Type>::hann, true };
-    AudioBuffer<float> fftBuffer           { 1, fft.getSize() * 2 };
+    juce::dsp::FFT fft                           { 12 };
+    juce::dsp::WindowingFunction<Type> windowing { size_t (fft.getSize()), juce::dsp::WindowingFunction<Type>::hann, true };
+    juce::AudioBuffer<float> fftBuffer           { 1, fft.getSize() * 2 };
 
-    AudioBuffer<float> averager            { 5, fft.getSize() / 2 };
+    juce::AudioBuffer<float> averager            { 5, fft.getSize() / 2 };
     int averagerPtr = 1;
 
-    AbstractFifo abstractFifo              { 48000 };
-    AudioBuffer<Type> audioFifo;
+    juce::AbstractFifo abstractFifo              { 48000 };
+    juce::AudioBuffer<Type> audioFifo;
 
     std::atomic<bool> newDataAvailable;
 
