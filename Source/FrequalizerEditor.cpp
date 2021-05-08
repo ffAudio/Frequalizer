@@ -16,8 +16,7 @@ static float maxDB       = 24.0f;
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAudioProcessor& p)
-  : AudioProcessorEditor (&p), freqProcessor (p),
-    output (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow)
+  : juce::AudioProcessorEditor (&p), freqProcessor (p)
 {
     tooltipWindow->setMillisecondsBeforeTipAppears (1000);
 
@@ -29,10 +28,10 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
     }
 
     frame.setText (TRANS ("Output"));
-    frame.setTextLabelPosition (Justification::centred);
+    frame.setTextLabelPosition (juce::Justification::centred);
     addAndMakeVisible (frame);
     addAndMakeVisible (output);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (freqProcessor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
+    attachments.add (new juce::AudioProcessorValueTreeState::SliderAttachment (freqProcessor.getPluginState(), FrequalizerAudioProcessor::paramOutput, output));
     output.setTooltip (TRANS ("Overall Gain"));
 
     auto size = freqProcessor.getSavedSize();
@@ -53,7 +52,7 @@ FrequalizerAudioProcessorEditor::FrequalizerAudioProcessorEditor (FrequalizerAud
 
 FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 {
-    PopupMenu::dismissAllActiveMenus();
+    juce::PopupMenu::dismissAllActiveMenus();
 
     freqProcessor.removeChangeListener (this);
 #ifdef JUCE_OPENGL
@@ -62,69 +61,70 @@ FrequalizerAudioProcessorEditor::~FrequalizerAudioProcessorEditor()
 }
 
 //==============================================================================
-void FrequalizerAudioProcessorEditor::paint (Graphics& g)
+void FrequalizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    const Colour inputColour = Colours::greenyellow;
-    const Colour outputColour = Colours::indianred;
+    const auto inputColour = juce::Colours::greenyellow;
+    const auto outputColour = juce::Colours::indianred;
 
-    Graphics::ScopedSaveState state (g);
+    juce::Graphics::ScopedSaveState state (g);
 
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    auto logo = ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
-    g.drawImage (logo, brandingFrame.toFloat(), RectanglePlacement (RectanglePlacement::fillDestination));
+    auto logo = juce::ImageCache::getFromMemory (FFAudioData::LogoFF_png, FFAudioData::LogoFF_pngSize);
+    g.drawImage (logo, brandingFrame.toFloat(), juce::RectanglePlacement (juce::RectanglePlacement::fillDestination));
 
     g.setFont (12.0f);
-    g.setColour (Colours::silver);
+    g.setColour (juce::Colours::silver);
     g.drawRoundedRectangle (plotFrame.toFloat(), 5, 2);
     for (int i=0; i < 10; ++i) {
-        g.setColour (Colours::silver.withAlpha (0.3f));
+        g.setColour (juce::Colours::silver.withAlpha (0.3f));
         auto x = plotFrame.getX() + plotFrame.getWidth() * i * 0.1f;
-        if (i > 0) g.drawVerticalLine (roundToInt (x), float (plotFrame.getY()), float (plotFrame.getBottom()));
+        if (i > 0) g.drawVerticalLine (juce::roundToInt (x), float (plotFrame.getY()), float (plotFrame.getBottom()));
 
-        g.setColour (Colours::silver);
+        g.setColour (juce::Colours::silver);
         auto freq = getFrequencyForPosition (i * 0.1f);
-        g.drawFittedText ((freq < 1000) ? String (freq) + " Hz" : String (freq / 1000, 1) + " kHz",
-                          roundToInt (x + 3), plotFrame.getBottom() - 18, 50, 15, Justification::left, 1);
+        g.drawFittedText ((freq < 1000) ? juce::String (freq) + " Hz"
+                                        : juce::String (freq / 1000, 1) + " kHz",
+                          juce::roundToInt (x + 3), plotFrame.getBottom() - 18, 50, 15, juce::Justification::left, 1);
     }
 
-    g.setColour (Colours::silver.withAlpha (0.3f));
-    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.25 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
-    g.drawHorizontalLine (roundToInt (plotFrame.getY() + 0.75 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
+    g.setColour (juce::Colours::silver.withAlpha (0.3f));
+    g.drawHorizontalLine (juce::roundToInt (plotFrame.getY() + 0.25 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
+    g.drawHorizontalLine (juce::roundToInt (plotFrame.getY() + 0.75 * plotFrame.getHeight()), float (plotFrame.getX()), float (plotFrame.getRight()));
 
-    g.setColour (Colours::silver);
-    g.drawFittedText (String (maxDB) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, Justification::left, 1);
-    g.drawFittedText (String (maxDB / 2) + " dB", plotFrame.getX() + 3, roundToInt (plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight()), 50, 14, Justification::left, 1);
-    g.drawFittedText (" 0 dB", plotFrame.getX() + 3, roundToInt (plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight()), 50, 14, Justification::left, 1);
-    g.drawFittedText (String (- maxDB / 2) + " dB", plotFrame.getX() + 3, roundToInt (plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight()), 50, 14, Justification::left, 1);
+    g.setColour (juce::Colours::silver);
+    g.drawFittedText (juce::String (maxDB) + " dB", plotFrame.getX() + 3, plotFrame.getY() + 2, 50, 14, juce::Justification::left, 1);
+    g.drawFittedText (juce::String (maxDB / 2) + " dB", plotFrame.getX() + 3, juce::roundToInt (plotFrame.getY() + 2 + 0.25 * plotFrame.getHeight()), 50, 14, juce::Justification::left, 1);
+    g.drawFittedText (" 0 dB", plotFrame.getX() + 3, juce::roundToInt (plotFrame.getY() + 2 + 0.5  * plotFrame.getHeight()), 50, 14, juce::Justification::left, 1);
+    g.drawFittedText (juce::String (- maxDB / 2) + " dB", plotFrame.getX() + 3, juce::roundToInt (plotFrame.getY() + 2 + 0.75 * plotFrame.getHeight()), 50, 14, juce::Justification::left, 1);
 
     g.reduceClipRegion (plotFrame);
 
     g.setFont (16.0f);
     freqProcessor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, true);
     g.setColour (inputColour);
-    g.drawFittedText ("Input", plotFrame.reduced (8), Justification::topRight, 1);
-    g.strokePath (analyserPath, PathStrokeType (1.0));
+    g.drawFittedText ("Input", plotFrame.reduced (8), juce::Justification::topRight, 1);
+    g.strokePath (analyserPath, juce::PathStrokeType (1.0));
     freqProcessor.createAnalyserPlot (analyserPath, plotFrame, 20.0f, false);
     g.setColour (outputColour);
-    g.drawFittedText ("Output", plotFrame.reduced (8, 28), Justification::topRight, 1);
-    g.strokePath (analyserPath, PathStrokeType (1.0));
+    g.drawFittedText ("Output", plotFrame.reduced (8, 28), juce::Justification::topRight, 1);
+    g.strokePath (analyserPath, juce::PathStrokeType (1.0));
 
     for (size_t i=0; i < freqProcessor.getNumBands(); ++i) {
         auto* bandEditor = bandEditors.getUnchecked (int (i));
         auto* band = freqProcessor.getBand (i);
 
         g.setColour (band->active ? band->colour : band->colour.withAlpha (0.3f));
-        g.strokePath (bandEditor->frequencyResponse, PathStrokeType (1.0));
+        g.strokePath (bandEditor->frequencyResponse, juce::PathStrokeType (1.0));
         g.setColour (draggingBand == int (i) ? band->colour : band->colour.withAlpha (0.3f));
-        auto x = roundToInt (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency (float (band->frequency)));
-        auto y = roundToInt (getPositionForGain (float (band->gain), float (plotFrame.getY()), float (plotFrame.getBottom())));
+        auto x = juce::roundToInt (plotFrame.getX() + plotFrame.getWidth() * getPositionForFrequency (float (band->frequency)));
+        auto y = juce::roundToInt (getPositionForGain (float (band->gain), float (plotFrame.getY()), float (plotFrame.getBottom())));
         g.drawVerticalLine (x, float (plotFrame.getY()), float (y - 5));
         g.drawVerticalLine (x, float (y + 5), float (plotFrame.getBottom()));
         g.fillEllipse (float (x - 3), float (y - 3), 6.0f, 6.0f);
     }
-    g.setColour (Colours::silver);
-    g.strokePath (frequencyResponse, PathStrokeType (1.0f));
+    g.setColour (juce::Colours::silver);
+    g.strokePath (frequencyResponse, juce::PathStrokeType (1.0f));
 }
 
 void FrequalizerAudioProcessorEditor::resized()
@@ -135,7 +135,7 @@ void FrequalizerAudioProcessorEditor::resized()
     socialButtons.setBounds (plotFrame.removeFromBottom (35));
 
     auto bandSpace = plotFrame.removeFromBottom (getHeight() / 2);
-    auto width = roundToInt (bandSpace.getWidth()) / (bandEditors.size() + 1);
+    auto width = juce::roundToInt (bandSpace.getWidth()) / (bandEditors.size() + 1);
     for (auto* bandEditor : bandEditors)
         bandEditor->setBounds (bandSpace.removeFromLeft (width));
 
@@ -148,7 +148,7 @@ void FrequalizerAudioProcessorEditor::resized()
     updateFrequencyResponses();
 }
 
-void FrequalizerAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sender)
+void FrequalizerAudioProcessorEditor::changeListenerCallback (juce::ChangeBroadcaster* sender)
 {
     ignoreUnused (sender);
     updateFrequencyResponses();
@@ -161,7 +161,7 @@ void FrequalizerAudioProcessorEditor::timerCallback()
         repaint (plotFrame);
 }
 
-void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
+void FrequalizerAudioProcessorEditor::mouseDown (const juce::MouseEvent& e)
 {
     if (! e.mods.isPopupMenu() || ! plotFrame.contains (e.x, e.y))
         return;
@@ -178,7 +178,7 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
                 for (int t=0; t < names.size(); ++t)
                     contextMenu.addItem (t + 1, names [t], true, band->type == t);
 
-                contextMenu.showMenuAsync (PopupMenu::Options()
+                contextMenu.showMenuAsync (juce::PopupMenu::Options()
                                            .withTargetComponent (this)
                                            .withTargetScreenArea ({e.getScreenX(), e.getScreenY(), 1, 1})
                                            , [this, i](int selected)
@@ -192,7 +192,7 @@ void FrequalizerAudioProcessorEditor::mouseDown (const MouseEvent& e)
     }
 }
 
-void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
+void FrequalizerAudioProcessorEditor::mouseMove (const juce::MouseEvent& e)
 {
     if (plotFrame.contains (e.x, e.y))
     {
@@ -208,11 +208,11 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
                                   - e.position.getY()) < clickRadius)
                     {
                         draggingGain = freqProcessor.getPluginState().getParameter (freqProcessor.getGainParamName (size_t (i)));
-                        setMouseCursor (MouseCursor (MouseCursor::UpDownLeftRightResizeCursor));
+                        setMouseCursor (juce::MouseCursor (juce::MouseCursor::UpDownLeftRightResizeCursor));
                     }
                     else
                     {
-                        setMouseCursor (MouseCursor (MouseCursor::LeftRightResizeCursor));
+                        setMouseCursor (juce::MouseCursor (juce::MouseCursor::LeftRightResizeCursor));
                     }
 
                     if (i != draggingBand)
@@ -227,13 +227,13 @@ void FrequalizerAudioProcessorEditor::mouseMove (const MouseEvent& e)
     }
     draggingBand = -1;
     draggingGain = false;
-    setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
+    setMouseCursor (juce::MouseCursor (juce::MouseCursor::NormalCursor));
     repaint (plotFrame);
 }
 
-void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
+void FrequalizerAudioProcessorEditor::mouseDrag (const juce::MouseEvent& e)
 {
-    if (isPositiveAndBelow (draggingBand, bandEditors.size()))
+    if (juce::isPositiveAndBelow (draggingBand, bandEditors.size()))
     {
         auto pos = (e.position.getX() - plotFrame.getX()) / plotFrame.getWidth();
         bandEditors [draggingBand]->setFrequency (getFrequencyForPosition (pos));
@@ -242,7 +242,7 @@ void FrequalizerAudioProcessorEditor::mouseDrag (const MouseEvent& e)
     }
 }
 
-void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
+void FrequalizerAudioProcessorEditor::mouseDoubleClick (const juce::MouseEvent& e)
 {
     if (plotFrame.contains (e.x, e.y))
     {
@@ -263,7 +263,7 @@ void FrequalizerAudioProcessorEditor::mouseDoubleClick (const MouseEvent& e)
 
 void FrequalizerAudioProcessorEditor::updateFrequencyResponses ()
 {
-    auto pixelsPerDouble = 2.0f * plotFrame.getHeight() / Decibels::decibelsToGain (maxDB);
+    auto pixelsPerDouble = 2.0f * plotFrame.getHeight() / juce::Decibels::decibelsToGain (maxDB);
 
     for (int i=0; i < bandEditors.size(); ++i)
     {
@@ -293,58 +293,53 @@ float FrequalizerAudioProcessorEditor::getFrequencyForPosition (float pos)
 
 float FrequalizerAudioProcessorEditor::getPositionForGain (float gain, float top, float bottom)
 {
-    return jmap (Decibels::gainToDecibels (gain, -maxDB), -maxDB, maxDB, bottom, top);
+    return juce::jmap (juce::Decibels::gainToDecibels (gain, -maxDB), -maxDB, maxDB, bottom, top);
 }
 
 float FrequalizerAudioProcessorEditor::getGainForPosition (float pos, float top, float bottom)
 {
-    return Decibels::decibelsToGain (jmap (pos, bottom, top, -maxDB, maxDB), -maxDB);
+    return juce::Decibels::decibelsToGain (juce::jmap (pos, bottom, top, -maxDB, maxDB), -maxDB);
 }
 
 
 //==============================================================================
 FrequalizerAudioProcessorEditor::BandEditor::BandEditor (size_t i, FrequalizerAudioProcessor& p)
   : index (i),
-    processor (p),
-    frequency (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
-    quality   (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
-    gain      (Slider::RotaryHorizontalVerticalDrag, Slider::TextBoxBelow),
-    solo      (TRANS ("S")),
-    activate  (TRANS ("A"))
+    processor (p)
 {
     frame.setText (processor.getBandName (index));
-    frame.setTextLabelPosition (Justification::centred);
-    frame.setColour (GroupComponent::textColourId, processor.getBandColour (index));
-    frame.setColour (GroupComponent::outlineColourId, processor.getBandColour (index));
+    frame.setTextLabelPosition (juce::Justification::centred);
+    frame.setColour (juce::GroupComponent::textColourId, processor.getBandColour (index));
+    frame.setColour (juce::GroupComponent::outlineColourId, processor.getBandColour (index));
     addAndMakeVisible (frame);
 
-    if (auto* choiceParameter = dynamic_cast<AudioParameterChoice*>(processor.getPluginState().getParameter (processor.getTypeParamName (index))))
+    if (auto* choiceParameter = dynamic_cast<juce::AudioParameterChoice*>(processor.getPluginState().getParameter (processor.getTypeParamName (index))))
         filterType.addItemList (choiceParameter->choices, 1);
 
     addAndMakeVisible (filterType);
-    boxAttachments.add (new AudioProcessorValueTreeState::ComboBoxAttachment (processor.getPluginState(), processor.getTypeParamName (index), filterType));
+    boxAttachments.add (new juce::AudioProcessorValueTreeState::ComboBoxAttachment (processor.getPluginState(), processor.getTypeParamName (index), filterType));
 
     addAndMakeVisible (frequency);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getFrequencyParamName (index), frequency));
+    attachments.add (new juce::AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getFrequencyParamName (index), frequency));
     frequency.setTooltip (TRANS ("Filter's frequency"));
 
     addAndMakeVisible (quality);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getQualityParamName (index), quality));
+    attachments.add (new juce::AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getQualityParamName (index), quality));
     quality.setTooltip (TRANS ("Filter's steepness (Quality)"));
 
     addAndMakeVisible (gain);
-    attachments.add (new AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
+    attachments.add (new juce::AudioProcessorValueTreeState::SliderAttachment (processor.getPluginState(), processor.getGainParamName (index), gain));
     gain.setTooltip (TRANS ("Filter's gain"));
 
     solo.setClickingTogglesState (true);
     solo.addListener (this);
-    solo.setColour (TextButton::buttonOnColourId, Colours::yellow);
+    solo.setColour (juce::TextButton::buttonOnColourId, juce::Colours::yellow);
     addAndMakeVisible (solo);
     solo.setTooltip (TRANS ("Listen only through this filter (solo)"));
 
     activate.setClickingTogglesState (true);
-    activate.setColour (TextButton::buttonOnColourId, Colours::green);
-    buttonAttachments.add (new AudioProcessorValueTreeState::ButtonAttachment (processor.getPluginState(), processor.getActiveParamName (index), activate));
+    activate.setColour (juce::TextButton::buttonOnColourId, juce::Colours::green);
+    buttonAttachments.add (new juce::AudioProcessorValueTreeState::ButtonAttachment (processor.getPluginState(), processor.getActiveParamName (index), activate));
     addAndMakeVisible (activate);
     activate.setTooltip (TRANS ("Activate or deactivate this filter"));
 }
@@ -406,6 +401,7 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
             frequency.setEnabled (true); quality.setEnabled (true); gain.setEnabled (false);
             break;
         case FrequalizerAudioProcessor::LastFilterID:
+        case FrequalizerAudioProcessor::NoFilter:
         default:
             frequency.setEnabled (true);
             quality.setEnabled (true);
@@ -416,25 +412,25 @@ void FrequalizerAudioProcessorEditor::BandEditor::updateControls (FrequalizerAud
 
 void FrequalizerAudioProcessorEditor::BandEditor::updateSoloState (bool isSolo)
 {
-    solo.setToggleState (isSolo, dontSendNotification);
+    solo.setToggleState (isSolo, juce::dontSendNotification);
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::setFrequency (float freq)
 {
-    frequency.setValue (freq, sendNotification);
+    frequency.setValue (freq, juce::sendNotification);
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::setGain (float gainToUse)
 {
-    gain.setValue (gainToUse, sendNotification);
+    gain.setValue (gainToUse, juce::sendNotification);
 }
 
 void FrequalizerAudioProcessorEditor::BandEditor::setType (int type)
 {
-    filterType.setSelectedId (type + 1, sendNotification);
+    filterType.setSelectedId (type + 1, juce::sendNotification);
 }
 
-void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (Button* b)
+void FrequalizerAudioProcessorEditor::BandEditor::buttonClicked (juce::Button* b)
 {
     if (b == &solo) {
         processor.setBandSolo (solo.getToggleState() ? int (index) : -1);
