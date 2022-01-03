@@ -49,4 +49,33 @@ jobs:
         /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/AU/Frequalizer.component -v
         /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/VST3/Frequalizer.vst3 -v
 
+    - name: Package (macos)
+      if: runner.os == 'MacOS'
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      env:
+        BUNDLE: com.foleysfinest.frequalizer
+        VERSION: 1.1.0
+        DIST_DIR: ${{runner.workspace}}/build/frequalizer_artefacts/Release
+        INSTALL_DIR: /Library/Audio/Plug-Ins
+      run: |
+        pkgbuild --identifier ${BUNDLE}.au --version ${VERSION} --component ${DIST_DIR}/AU/Frequalizer.component \
+        --install-location "${INSTALL_DIR}/Components" ${DIST_DIR}/Frequalizer.au.pkg 
+
+        pkgbuild --identifier ${BUNDLE}.vst3 --version ${VERSION} --component ${DIST_DIR}/VST3/Frequalizer.vst3 \
+        --install-location "${INSTALL_DIR}/VST3" ${DIST_DIR}/Frequalizer.vst3.pkg 
+
+        productbuild --synthesize \
+        --package "${DIST_DIR}/Frequalizer.au.pkg" \
+        --package "${DIST_DIR}/Frequalizer.vst3.pkg" \
+        distribution.xml
+
+        productbuild --distribution distribution.xml --package-path ${DIST_DIR} ${DIST_DIR}/Frequalizer.pkg
+
+    - name: 'Upload Artifact (MacOS)'
+      if: runner.os == 'MacOS'
+      uses: actions/upload-artifact@v2
+      with:
+        name: Frequalizer (MacOS)
+        path: ${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg
 
