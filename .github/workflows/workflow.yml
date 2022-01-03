@@ -29,3 +29,24 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
+
+    - name: Codesign (macos)
+      if: runner.os == 'MacOS'
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      env: 
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      run: |
+        echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+        RANDOM_PWD=`date | md5`
+        security create-keychain -p ${RANDOM_PWD} build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p ${RANDOM_PWD} build.keychain
+        security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${RANDOM_PWD} build.keychain
+
+        /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/AU/Frequalizer.component -v
+        /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/VST3/Frequalizer.vst3 -v
+
+
