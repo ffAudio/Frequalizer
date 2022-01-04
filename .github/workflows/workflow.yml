@@ -72,6 +72,13 @@ jobs:
 
         productbuild --distribution distribution.xml --package-path ${DIST_DIR} ${DIST_DIR}/Frequalizer.pkg
 
+    - name: InnoSetup Installer (Windows)
+      if: runner.os == 'Windows'
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        "%programfiles(x86)%\Inno Setup 6\iscc.exe" /DBuildDir="${{runner.workspace}}\build\frequalizer_artefacts\Release" "${{runner.workspace}}\Frequalizer\Resources\InnoSetup.iss"
+      shell: cmd
+
     - name: 'Upload Artifact (MacOS)'
       if: runner.os == 'MacOS'
       uses: actions/upload-artifact@v2
