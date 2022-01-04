@@ -86,3 +86,10 @@ jobs:
         name: Frequalizer (MacOS)
         path: ${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg
 
+    - name: 'Upload Artifact (Windows)'
+      if: runner.os == 'MacOS'
+      uses: actions/upload-artifact@v2
+      with:
+        name: Frequalizer (Windows)
+        path: ${{runner.workspace}}\build\frequalizer_artefacts\Release\Output\Frequalizer_WIN.exe
+
