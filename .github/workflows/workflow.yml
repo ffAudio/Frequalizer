@@ -85,11 +85,13 @@ jobs:
       with:
         name: Frequalizer (MacOS)
         path: ${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg
+        if-no-files-found: error
 
     - name: 'Upload Artifact (Windows)'
-      if: runner.os == 'MacOS'
+      if: runner.os == 'Windows'
       uses: actions/upload-artifact@v2
       with:
         name: Frequalizer (Windows)
         path: ${{runner.workspace}}\build\frequalizer_artefacts\Release\Output\Frequalizer_WIN.exe
+        if-no-files-found: error
 
