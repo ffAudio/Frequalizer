@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
         - os: macos-latest
-          INSTALLER_NAME: ${{ env.PRODUCT }}_OSX.pkg
+          INSTALLER_NAME: "${{ env.PRODUCT }}_OSX.pkg"
         - os: windows-latest
-          INSTALLER_NAME: ${{ env.PRODUCT }}_WIN.exe
+          INSTALLER_NAME: "${{ env.PRODUCT }}_WIN.exe"
 
     steps:
     - uses: actions/checkout@v2
