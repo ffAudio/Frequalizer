@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
         - os: macos-latest
-          INSTALLER_NAME: "${{ env.PRODUCT }}_OSX.pkg"
+          INSTALLER_NAME: Frequalizer_OSX.pkg
         - os: windows-latest
-          INSTALLER_NAME: "${{ env.PRODUCT }}_WIN.exe"
+          INSTALLER_NAME: Frequalizer_WIN.exe
 
     steps:
     - uses: actions/checkout@v2
@@ -60,7 +60,6 @@ jobs:
 
     - name: Package (macos)
       if: runner.os == 'MacOS'
-      working-directory: ${{runner.workspace}}/build
       shell: bash
       env:
         INSTALL_DIR: /Library/Audio/Plug-Ins
@@ -76,7 +75,7 @@ jobs:
         --package "${{ env.OUTPUT_PATH }}/${{ env.PRODUCT }}.vst3.pkg" \
         distribution.xml
 
-        productbuild --distribution distribution.xml --package-path ${{ env.OUTPUT_PATH }} ${{ env.OUTPUT_PATH }}/${{ matrix.INSTALLER_NAME }}
+        productbuild --distribution distribution.xml --package-path ${{ env.OUTPUT_PATH }} ${{ matrix.INSTALLER_NAME }}
 
     - name: InnoSetup Installer (Windows)
       if: runner.os == 'Windows'
@@ -88,6 +87,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.PRODUCT }} (${{runner.os}})
-        path: ${{ env.OUTPUT_PATH }}/${{ matrix.INSTALLER_NAME }}
+        path: ${{ matrix.INSTALLER_NAME }}
         if-no-files-found: error
 
