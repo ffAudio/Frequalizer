@@ -80,7 +80,7 @@ jobs:
     - name: InnoSetup Installer (Windows)
       if: runner.os == 'Windows'
       run: |
-        "%programfiles(x86)%\Inno Setup 6\iscc.exe" /DBuildDir="${{ runner.workspace }}\${{ env.OUTPUT_PATH }}" "${{ github.workspace }}\Resources\InnoSetup.iss"
+        "%programfiles(x86)%\Inno Setup 6\iscc.exe" /DBuildDir="${{ runner.workspace }}\${{ env.OUTPUT_PATH }}" /O"${{ runner.workspace }}\${{ env.OUTPUT_PATH }}" "${{ github.workspace }}\Resources\InnoSetup.iss"
       shell: cmd
 
     - name: 'Upload Artifact'
