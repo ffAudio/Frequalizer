@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 env:
   BUILD_TYPE: Release
+  BUNDLE_ID: com.foleysfinest.frequalizer
+  VERSION: 1.1.1
 
 jobs:
   build:
@@ -30,39 +32,36 @@ jobs:
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
 
-    - name: Codesign (macos)
-      if: runner.os == 'MacOS'
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      env: 
-        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-      run: |
-        echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-        RANDOM_PWD=`date | md5`
-        security create-keychain -p ${RANDOM_PWD} build.keychain
-        security default-keychain -s build.keychain
-        security unlock-keychain -p ${RANDOM_PWD} build.keychain
-        security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
-        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${RANDOM_PWD} build.keychain
-
-        /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/AU/Frequalizer.component -v
-        /usr/bin/codesign --force -s "Developer ID Application" frequalizer_artefacts/Release/VST3/Frequalizer.vst3 -v
-
     - name: Package (macos)
       if: runner.os == 'MacOS'
       working-directory: ${{runner.workspace}}/build
       shell: bash
       env:
-        BUNDLE: com.foleysfinest.frequalizer
-        VERSION: 1.1.0
         DIST_DIR: ${{runner.workspace}}/build/frequalizer_artefacts/Release
         INSTALL_DIR: /Library/Audio/Plug-Ins
+        BUNDLE_ID: ${{ env.BUNDLE_ID }}
+        VERSION: ${{ env.VERSION }}
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_INSTALLER_CERT: ${{ secrets.MACOS_INSTALLER_CERT }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       run: |
-        pkgbuild --identifier ${BUNDLE}.au --version ${VERSION} --component ${DIST_DIR}/AU/Frequalizer.component \
+        echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+        echo $MACOS_INSTALLER_CERT | base64 --decode > installer.p12
+        RANDOM_PWD=`date | md5`
+        security create-keychain -p ${RANDOM_PWD} build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p ${RANDOM_PWD} build.keychain
+        security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+        security import installer.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/productbuild
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${RANDOM_PWD} build.keychain
+
+        /usr/bin/codesign --timestamp --force --deep -s "Developer ID Application" frequalizer_artefacts/Release/AU/Frequalizer.component -v
+        /usr/bin/codesign --timestamp --force --deep -s "Developer ID Application" frequalizer_artefacts/Release/VST3/Frequalizer.vst3 -v
+
+        pkgbuild --identifier ${BUNDLE_ID}.au --version ${VERSION} --component ${DIST_DIR}/AU/Frequalizer.component \
         --install-location "${INSTALL_DIR}/Components" ${DIST_DIR}/Frequalizer.au.pkg 
 
-        pkgbuild --identifier ${BUNDLE}.vst3 --version ${VERSION} --component ${DIST_DIR}/VST3/Frequalizer.vst3 \
+        pkgbuild --identifier ${BUNDLE_ID}.vst3 --version ${VERSION} --component ${DIST_DIR}/VST3/Frequalizer.vst3 \
         --install-location "${INSTALL_DIR}/VST3" ${DIST_DIR}/Frequalizer.vst3.pkg 
 
         productbuild --synthesize \
@@ -70,7 +69,22 @@ jobs:
         --package "${DIST_DIR}/Frequalizer.vst3.pkg" \
         distribution.xml
 
-        productbuild --distribution distribution.xml --package-path ${DIST_DIR} ${DIST_DIR}/Frequalizer.pkg
+        productbuild --sign "Developer ID Installer" --distribution distribution.xml --package-path ${DIST_DIR} ${DIST_DIR}/Frequalizer.pkg
+
+    - name: Notarize (macos)
+      if: runner.os == 'MacOS'
+      uses: devbotsxyz/xcode-notarize@v1
+      with:
+        product-path: "${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg"
+        appstore-connect-username: ${{ secrets.MACOS_NOTARIZE_USER }} 
+        appstore-connect-password: ${{ secrets.MACOS_NOTARIZE_PWD }} 
+        primary-bundle-id: ${{ env.BUNDLE_ID }}
+
+    - name: Staple (macos)
+      if: runner.os == 'MacOS'
+      uses: devbotsxyz/xcode-staple@v1
+      with:
+        product-path: "${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg"
 
     - name: InnoSetup Installer (Windows)
       if: runner.os == 'Windows'
