@@ -72,6 +72,15 @@ jobs:
 
         productbuild --distribution distribution.xml --package-path ${DIST_DIR} ${DIST_DIR}/Frequalizer.pkg
 
+    - name: Notarize (macos)
+      if: runner.os == 'MacOS'
+      uses: devbotsxyz/xcode-notarize@v1
+      with:
+        product-path: "${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg"
+        appstore-connect-username: {{ secrets.MACOS_NOTARIZE_USER }} 
+        appstore-connect-password: {{ secrets.MACOS_NOTARIZE_PWD }} 
+
+
     - name: InnoSetup Installer (Windows)
       if: runner.os == 'Windows'
       working-directory: ${{runner.workspace}}/build
