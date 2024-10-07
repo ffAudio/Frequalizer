@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.13.0)
-project(frequalizer VERSION 1.1.0)
-add_subdirectory(External/JUCE)
+project(frequalizer VERSION 1.1.1)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(Juce)
 
 # check which formats we want to build
-set(FORMATS "VST3")
+set(FORMATS "VST3" "Standalone")
 if (AAX_PATH)
     list(APPEND FORMATS "AAX")
     juce_set_aax_sdk_path(${AAX_PATH})
@@ -20,7 +22,6 @@ endif()
 
 # add the plugin targets
 juce_add_plugin(frequalizer
-                VERSION "1.1.0"
                 COMPANY_NAME "foleysfinest"
                 PLUGIN_MANUFACTURER_CODE "FFAU"
                 PLUGIN_CODE "FqOS"
