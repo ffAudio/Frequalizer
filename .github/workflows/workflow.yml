@@ -73,18 +73,12 @@ jobs:
 
     - name: Notarize (macos)
       if: runner.os == 'MacOS'
-      uses: devbotsxyz/xcode-notarize@v1
+      uses: lando/notarize-action@v2
       with:
         product-path: "${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg"
         appstore-connect-username: ${{ secrets.MACOS_NOTARIZE_USER }} 
         appstore-connect-password: ${{ secrets.MACOS_NOTARIZE_PWD }} 
         primary-bundle-id: ${{ env.BUNDLE_ID }}
-
-    - name: Staple (macos)
-      if: runner.os == 'MacOS'
-      uses: devbotsxyz/xcode-staple@v1
-      with:
-        product-path: "${{runner.workspace}}/build/frequalizer_artefacts/Release/Frequalizer.pkg"
 
     - name: InnoSetup Installer (Windows)
       if: runner.os == 'Windows'
